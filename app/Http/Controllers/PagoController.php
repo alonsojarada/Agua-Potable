@@ -158,4 +158,11 @@ class PagoController extends Controller
 
         return view('pagos.ticket', compact('pago'));
     }
+
+    public function comprobante($id)
+    {
+        $pago = Pago::with(['usuario.tarifa', 'usuario.red'])->findOrFail($id);
+
+        return view('pagos.comprobante', compact('pago'));
+    }
 }

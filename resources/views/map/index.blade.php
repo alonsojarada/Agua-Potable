@@ -1,23 +1,10 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div class="flex justify-between items-center min-w-0">
+            <h2 class="font-semibold text-xs sm:text-sm md:text-base lg:text-xl text-gray-800 leading-tight truncate min-w-0"
+                title="Mapa General: Redes, Tomas y Horarios">
                 {{ __('Mapa General: Redes, Tomas y Horarios') }}
             </h2>
-            <div class="flex space-x-2">
-                <a href="{{ route('horarios.index') }}"
-                    class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md text-sm font-semibold shadow">
-                    Horarios
-                </a>
-                <a href="{{ route('redes.index') }}"
-                    class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-1.5 rounded-md text-sm font-semibold shadow">
-                    Gestión de Redes
-                </a>
-                <a href="{{ route('usuarios.index') }}"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-md text-sm font-semibold shadow">
-                    Padrón de Tomas
-                </a>
-            </div>
         </div>
     </x-slot>
 
@@ -25,243 +12,226 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- CONTENEDOR DE ANCHO 100% DINÁMICO -->
+    <div class="py-2 px-2 sm:px-3 w-full">
+        <div class="flex flex-col lg:flex-row gap-2.5 items-stretch">
 
-                <!-- PANEL IZQUIERDO: Controles Jerárquicos y Horarios -->
-                <div class="lg:col-span-4 bg-white overflow-hidden shadow-sm sm:rounded-lg p-5 flex flex-col h-[750px]">
-                    <h3 class="font-bold text-gray-800 text-lg mb-1">Panel de Control</h3>
-                    <p class="text-xs text-gray-500 mb-3">Filtra circuitos, tomas e inspecciona horarios de suministro.</p>
+            <!-- PANEL IZQUIERDO COMPACTO (w-80 fijo con escala de texto adaptativa) -->
+            <div
+                class="w-full lg:w-80 bg-white overflow-hidden shadow-2xs rounded-lg p-2.5 flex flex-col h-[520px] lg:h-[calc(100vh-120px)] shrink-0">
+                <h3 class="font-bold text-gray-800 text-xs sm:text-sm mb-0.5">Panel de Control</h3>
+                <p class="text-[10px] sm:text-[11px] text-gray-500 mb-1.5">Filtra circuitos, tomas e inspecciona horarios.</p>
 
-                    <!-- Controles Globales Rápidos -->
-                    <div class="mb-3 p-2.5 bg-slate-50 rounded-lg border border-gray-200 text-xs space-y-2">
-                        <div class="grid grid-cols-2 gap-2">
-                            <div>
-                                <span class="font-bold text-gray-700 block mb-1">Tuberías (Redes):</span>
-                                <div class="space-x-1.5">
-                                    <button type="button" id="btn-redes-todas"
-                                        class="text-blue-600 hover:underline font-semibold">Todas</button>
-                                    <span class="text-gray-300">|</span>
-                                    <button type="button" id="btn-redes-ninguna"
-                                        class="text-red-600 hover:underline font-semibold">Ninguna</button>
-                                </div>
-                            </div>
-                            <div class="border-l border-gray-200 pl-2.5">
-                                <span class="font-bold text-gray-700 block mb-1">Tomas (Usuarios):</span>
-                                <div class="space-x-1.5">
-                                    <button type="button" id="btn-tomas-todas"
-                                        class="text-emerald-600 hover:underline font-semibold">Todas</button>
-                                    <span class="text-gray-300">|</span>
-                                    <button type="button" id="btn-tomas-ninguna"
-                                        class="text-red-600 hover:underline font-semibold">Ninguna</button>
-                                </div>
+                <!-- Controles Globales Rápidos -->
+                <div class="mb-1.5 p-1.5 bg-slate-50 rounded-md border border-gray-200 text-xs space-y-1.5 shrink-0">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <div>
+                            <span class="font-bold text-gray-700 block text-[10px] sm:text-[11px]">Tuberías (Redes):</span>
+                            <div class="space-x-1">
+                                <button type="button" id="btn-redes-todas"
+                                    class="text-blue-600 hover:underline font-semibold text-[10px] sm:text-[11px] cursor-pointer">Todas</button>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" id="btn-redes-ninguna"
+                                    class="text-red-600 hover:underline font-semibold text-[10px] sm:text-[11px] cursor-pointer">Ninguna</button>
                             </div>
                         </div>
-
-                        <!-- Checkbox Global para Mostrar/Ocultar Horarios -->
-                        <div class="pt-2 border-t border-gray-200">
-                            <label class="flex items-center space-x-2 cursor-pointer text-gray-700 hover:text-gray-900">
-                                <input type="checkbox" id="cb-mostrar-horarios"
-                                    class="rounded border-gray-300 text-amber-600 focus:ring-amber-500">
-                                <span class="font-bold">Mostrar horarios de suministro</span>
-                            </label>
+                        <div class="border-l border-gray-200 pl-1.5">
+                            <span class="font-bold text-gray-700 block text-[10px] sm:text-[11px]">Tomas (Usuarios):</span>
+                            <div class="space-x-1">
+                                <button type="button" id="btn-tomas-todas"
+                                    class="text-emerald-600 hover:underline font-semibold text-[10px] sm:text-[11px] cursor-pointer">Todas</button>
+                                <span class="text-gray-300">|</span>
+                                <button type="button" id="btn-tomas-ninguna"
+                                    class="text-red-600 hover:underline font-semibold text-[10px] sm:text-[11px] cursor-pointer">Ninguna</button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Listado Agrupado por Red -->
-                    <div
-                        class="overflow-y-auto flex-1 space-y-2.5 pr-1 border border-gray-100 rounded-md p-2 bg-slate-50/40">
-                        @foreach($redes as $red)
-                            <div class="bg-white rounded-md border border-gray-200 shadow-sm overflow-hidden">
-                                <!-- Cabecera de la Red -->
-                                <div class="p-2.5 bg-white hover:bg-slate-50 transition">
-                                    <div class="flex items-center justify-between mb-1">
-                                        <!-- Checkbox de la Tubería (Red) -->
-                                        <label class="flex items-center space-x-2 cursor-pointer overflow-hidden">
-                                            <input type="checkbox" value="{{ $red->id }}"
-                                                class="cb-red-tuberia rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                                            <span class="text-sm font-bold text-gray-800 truncate"
-                                                title="{{ $red->nombre }}">{{ $red->nombre }}</span>
-                                        </label>
-                                        <span
-                                            class="text-[11px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full font-semibold shrink-0">
-                                            {{ $red->tramos->count() }} tramos
-                                        </span>
-                                    </div>
+                    <!-- Checkbox Global para Mostrar/Ocultar Horarios -->
+                    <div class="pt-1 border-t border-gray-200">
+                        <label
+                            class="flex items-center space-x-1.5 cursor-pointer text-gray-700 hover:text-gray-900 text-[10px] sm:text-[11px]">
+                            <input type="checkbox" id="cb-mostrar-horarios"
+                                class="rounded border-gray-300 text-amber-600 focus:ring-amber-500 w-3.5 h-3.5">
+                            <span class="font-bold">Mostrar horarios de suministro</span>
+                        </label>
+                    </div>
+                </div>
 
-                                    <!-- Bloque de Horarios controlado por el Checkbox Global (Inicia oculto) -->
-                                    <div class="seccion-horario-red hidden">
-                                        <!-- Botón desplegable para Horarios de Suministro -->
-                                        <div
-                                            class="my-1.5 px-2 py-1 bg-amber-50/70 border border-amber-200 rounded flex items-center justify-between text-xs">
-                                            <span class="font-semibold text-amber-800">Suministro
-                                                ({{ $red->horarios->count() }} turnos)</span>
-                                            @if($red->horarios->count() > 0)
-                                                <button type="button"
-                                                    onclick="toggleAcordeon('lista-horarios-{{ $red->id }}', this)"
-                                                    class="text-amber-700 hover:text-amber-900 font-semibold flex items-center space-x-1 text-[11px]">
-                                                    <span>Ver horario</span>
-                                                    <span class="arrow-icon text-[10px]">&#9660;</span>
-                                                </button>
-                                            @else
-                                                <span class="text-gray-400 italic text-[11px]">Sin horario asignado</span>
-                                            @endif
-                                        </div>
+                <!-- LISTADO DE REDES Y USUARIOS (Tipografía responsiva de 11px a 12px) -->
+                <div
+                    class="overflow-y-auto flex-1 space-y-1.5 pr-1 border border-gray-100 rounded-md p-1 bg-slate-50/40">
+                    @foreach($redes as $red)
+                        <div class="bg-white rounded-md border border-gray-200 shadow-2xs overflow-hidden text-xs">
+                            <!-- Cabecera de la Red -->
+                            <div class="p-2 bg-white hover:bg-slate-50 transition">
+                                <div class="flex items-center justify-between mb-0.5">
+                                    <label class="flex items-center space-x-1.5 cursor-pointer overflow-hidden">
+                                        <input type="checkbox" value="{{ $red->id }}"
+                                            class="cb-red-tuberia rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                                        <span class="text-[11px] sm:text-xs font-bold text-gray-800 truncate"
+                                            title="{{ $red->nombre }}">{{ $red->nombre }}</span>
+                                    </label>
+                                    <span
+                                        class="text-[9px] sm:text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full font-semibold shrink-0">
+                                        {{ $red->tramos->count() }} tramos
+                                    </span>
+                                </div>
 
-                                        <!-- Contenedor Oculto de Horarios -->
+                                <!-- Bloque de Horarios -->
+                                <div class="seccion-horario-red hidden">
+                                    <div
+                                        class="my-1 px-1.5 py-0.5 bg-amber-50/70 border border-amber-200 rounded flex items-center justify-between text-[10px] sm:text-[11px]">
+                                        <span class="font-semibold text-amber-800">Suministro
+                                            ({{ $red->horarios->count() }})</span>
                                         @if($red->horarios->count() > 0)
-                                            <div id="lista-horarios-{{ $red->id }}"
-                                                class="hidden mb-2 px-2 py-1.5 bg-amber-50 border border-amber-200 rounded text-[11px] text-amber-800 space-y-1">
-                                                <ul class="list-disc list-inside">
-                                                    @foreach($red->horarios as $h)
-                                                        <li><strong>{{ $h->dia_semana }}:</strong>
-                                                            {{ date('H:i', strtotime($h->hora_inicio)) }} -
-                                                            {{ date('H:i', strtotime($h->hora_fin)) }} hrs
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        @endif
-                                    </div>
-
-                                    <!-- Barra de control de Tomas de esta Red -->
-                                    <div class="flex items-center justify-between pt-1 border-t border-gray-100 text-xs">
-                                        <label
-                                            class="flex items-center space-x-1.5 cursor-pointer text-gray-600 hover:text-gray-900">
-                                            <input type="checkbox" data-red-id="{{ $red->id }}"
-                                                class="cb-red-tomas rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
-                                            <span class="font-medium">Tomas ({{ $red->usuarios->count() }})</span>
-                                        </label>
-
-                                        @if($red->usuarios->count() > 0)
-                                            <button type="button" onclick="toggleAcordeon('lista-tomas-{{ $red->id }}', this)"
-                                                class="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center space-x-1">
-                                                <span>Ver lista</span>
-                                                <span class="arrow-icon text-[10px]">&#9660;</span>
+                                            <button type="button"
+                                                onclick="toggleAcordeon('lista-horarios-{{ $red->id }}', this)"
+                                                class="text-amber-700 hover:text-amber-900 font-semibold flex items-center space-x-1 cursor-pointer">
+                                                <span>Ver horario</span>
+                                                <span class="arrow-icon text-[9px]">&#9660;</span>
                                             </button>
                                         @else
-                                            <span class="text-gray-400 italic text-[11px]">Sin tomas</span>
+                                            <span class="text-gray-400 italic text-[10px]">Sin horario</span>
                                         @endif
                                     </div>
+
+                                    @if($red->horarios->count() > 0)
+                                        <div id="lista-horarios-{{ $red->id }}"
+                                            class="hidden mb-1 px-2 py-1 bg-amber-50 border border-amber-200 rounded text-[10px] text-amber-800 space-y-0.5">
+                                            <ul class="list-disc list-inside">
+                                                @foreach($red->horarios as $h)
+                                                    <li><strong>{{ $h->dia_semana }}:</strong>
+                                                        {{ date('H:i', strtotime($h->hora_inicio)) }} -
+                                                        {{ date('H:i', strtotime($h->hora_fin)) }}</li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @endif
                                 </div>
 
-                                <!-- Lista Desplegable de Tomas Individuales de esta Red -->
-                                @if($red->usuarios->count() > 0)
-                                    <div id="lista-tomas-{{ $red->id }}"
-                                        class="hidden bg-slate-50 border-t border-gray-200 p-2 space-y-1 max-h-40 overflow-y-auto">
-                                        @foreach($red->usuarios as $usuario)
-                                            @if($usuario->latitud && $usuario->longitud)
-                                                <label
-                                                    class="flex items-center justify-between p-1.5 rounded hover:bg-white cursor-pointer text-xs border border-transparent hover:border-gray-200">
-                                                    <div class="flex items-center space-x-2 overflow-hidden">
-                                                        <input type="checkbox" value="{{ $usuario->id }}" data-red-id="{{ $red->id }}"
-                                                            class="cb-toma-individual cb-toma-red-{{ $red->id }} rounded border-gray-300 text-emerald-600 focus:ring-emerald-500">
-                                                        <span class="text-gray-700 truncate" title="{{ $usuario->nombre_completo }}">
-                                                            <strong class="text-gray-900">{{ $usuario->folio }}</strong> -
-                                                            {{ $usuario->nombre_completo }}
-                                                        </span>
-                                                    </div>
-                                                    <span
-                                                        class="w-2 h-2 rounded-full shrink-0 ml-1
-                                                            {{ $usuario->estado_servicio === 'activo' ? 'bg-green-500' : ($usuario->estado_servicio === 'suspendido' ? 'bg-amber-500' : 'bg-red-500') }}"
-                                                        title="{{ ucfirst($usuario->estado_servicio) }}">
+                                <!-- Barra de control de Tomas -->
+                                <div class="flex items-center justify-between pt-1 border-t border-gray-100 text-[10px] sm:text-[11px]">
+                                    <label
+                                        class="flex items-center space-x-1.5 cursor-pointer text-gray-600 hover:text-gray-900">
+                                        <input type="checkbox" data-red-id="{{ $red->id }}"
+                                            class="cb-red-tomas rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5">
+                                        <span class="font-medium">Tomas ({{ $red->usuarios->count() }})</span>
+                                    </label>
+
+                                    @if($red->usuarios->count() > 0)
+                                        <button type="button" onclick="toggleAcordeon('lista-tomas-{{ $red->id }}', this)"
+                                            class="text-indigo-600 hover:text-indigo-800 font-semibold flex items-center space-x-0.5 cursor-pointer text-[10px] sm:text-[11px]">
+                                            <span>Ver lista</span>
+                                            <span class="arrow-icon text-[9px]">&#9660;</span>
+                                        </button>
+                                    @else
+                                        <span class="text-gray-400 italic text-[10px]">Sin tomas</span>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Lista Desplegable de Tomas Individuales con Scroll Interno -->
+                            @if($red->usuarios->count() > 0)
+                                <div id="lista-tomas-{{ $red->id }}"
+                                    class="hidden bg-slate-50 border-t border-gray-200 p-1.5 space-y-1 max-h-40 overflow-y-auto">
+                                    @foreach($red->usuarios as $usuario)
+                                        @if($usuario->latitud && $usuario->longitud)
+                                            <label
+                                                class="flex items-center justify-between p-1 rounded hover:bg-white cursor-pointer text-[10px] sm:text-[11px] border border-transparent hover:border-gray-200">
+                                                <div class="flex items-center space-x-1.5 overflow-hidden">
+                                                    <input type="checkbox" value="{{ $usuario->id }}" data-red-id="{{ $red->id }}"
+                                                        class="cb-toma-individual cb-toma-red-{{ $red->id }} rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5">
+                                                    <span class="text-gray-700 truncate" title="{{ $usuario->nombre_completo }}">
+                                                        <strong class="text-gray-900">{{ $usuario->folio }}</strong> -
+                                                        {{ $usuario->nombre_completo }}
                                                     </span>
-                                                </label>
-                                            @endif
-                                        @endforeach
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                </div>
-
-                <!-- PANEL DERECHO: Mapa y Barra de Simulación -->
-                <div class="lg:col-span-8 bg-white overflow-hidden shadow-sm sm:rounded-lg p-5 flex flex-col">
-
-                    <!-- BARRA DE CONTROL DE SIMULACIÓN (Compacta y alineada arriba) -->
-                    <div class="mb-3 p-2 bg-slate-50 border border-slate-200 rounded-lg shadow-sm">
-                        <!-- items-start fuerza la alineación superior de las columnas -->
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start">
-                            
-                            <!-- COLUMNA IZQUIERDA (md:col-span-3): Listado de Horarios en Texto alineado arriba con scroll estricto -->
-                            <div class="md:col-span-3 flex flex-col">
-                                <div class="max-h-14 overflow-y-auto pr-1">
-                                    <div id="lista-texto-horarios-dia" class="text-[11px] text-slate-600 leading-tight">
-                                        <!-- Relleno dinámico ordenado -->
-                                    </div>
+                                                </div>
+                                                <span
+                                                    class="w-1.5 h-1.5 rounded-full shrink-0 ml-1
+                                                                    {{ $usuario->estado_servicio === 'activo' ? 'bg-green-500' : ($usuario->estado_servicio === 'suspendido' ? 'bg-amber-500' : 'bg-red-500') }}"
+                                                    title="{{ ucfirst($usuario->estado_servicio) }}">
+                                                </span>
+                                            </label>
+                                        @endif
+                                    @endforeach
                                 </div>
-                            </div>
-
-                            <!-- COLUMNA DERECHA (md:col-span-9): Día, Red, Hora y Línea de Tiempo compactas -->
-                            <div class="md:col-span-9 flex flex-col space-y-1 pl-0 md:pl-3 border-t md:border-t-0 md:border-l border-slate-200 pt-1.5 md:pt-0">
-                                
-                                <!-- FILA SUPERIOR: Selector de Día reducido y Red justo a su lado -->
-                                <div class="flex items-center justify-between text-xs">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="font-bold text-slate-700 uppercase tracking-wider">DÍA:</span>
-                                        <select id="sim-dia"
-                                            class="rounded-md border-gray-300 text-xs shadow-sm focus:border-blue-500 focus:ring-blue-500 py-0.5 px-2 w-28">
-                                            <option value="Lunes">Lunes</option>
-                                            <option value="Martes">Martes</option>
-                                            <option value="Miércoles">Miércoles</option>
-                                            <option value="Jueves">Jueves</option>
-                                            <option value="Viernes">Viernes</option>
-                                            <option value="Sábado">Sábado</option>
-                                            <option value="Domingo">Domingo</option>
-                                        </select>
-                                        <div class="truncate px-2" title="Red en servicio">
-                                            <span class="text-slate-500 font-semibold">Red:</span>
-                                            <span id="sim-red-activa-label" class="text-emerald-700 font-bold ml-0.5">Ninguna</span>
-                                        </div>
-                                    </div>
-                                    <div class="shrink-0">
-                                        <span class="text-slate-500 font-semibold">Hora:</span>
-                                        <span id="sim-hora-label" class="text-blue-600 font-bold ml-0.5">00:00 hrs</span>
-                                    </div>
-                                </div>
-
-                                <!-- FILA INFERIOR: Botón Play, Línea de Tiempo y Escala Numérica -->
-                                <div class="flex items-center space-x-3">
-                                    <button type="button" id="sim-play-btn"
-                                        class="bg-blue-600 hover:bg-blue-700 text-white w-7 h-7 rounded-full flex items-center justify-center shadow transition shrink-0"
-                                        title="Reproducir / Pausa">
-                                        <span id="sim-play-icon" class="text-[10px] font-bold">&#9658;</span>
-                                    </button>
-                                    
-                                    <div class="flex-1">
-                                        <!-- Slider con intervalos de 15 min y fondo dinámico para franjas de servicio -->
-                                        <input type="range" id="sim-slider" min="0" max="23.75" value="0" step="0.25"
-                                            style="background: #cbd5e1;"
-                                            class="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-blue-700 border border-slate-300">
-                                        
-                                        <!-- Escala numérica de horas de extremo a extremo -->
-                                        <div class="flex justify-between text-[10px] text-slate-500 font-mono mt-0.5 select-none px-0.5">
-                                            <span>00</span>
-                                            <span>03</span>
-                                            <span>06</span>
-                                            <span>09</span>
-                                            <span>12</span>
-                                            <span>15</span>
-                                            <span>18</span>
-                                            <span>21</span>
-                                            <span>23</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                            </div>
-
+                            @endif
                         </div>
-                    </div>
+                    @endforeach
+                </div>
+            </div>
 
-                    <!-- Contenedor del Mapa -->
-                    <div id="map-general" style="height: 620px;" class="rounded-lg shadow-inner z-0 w-full flex-1">
+            <!-- PANEL DERECHO: Mapa y Simulación -->
+            <div
+                class="flex-1 bg-white overflow-hidden shadow-2xs rounded-lg p-2.5 flex flex-col h-[520px] lg:h-[calc(100vh-120px)] min-w-0">
+
+                <!-- BARRA DE SIMULACIÓN COMPACTA -->
+                <div class="mb-2 p-1.5 bg-slate-50 border border-slate-200 rounded-md shadow-2xs shrink-0">
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+
+                        <div class="md:col-span-3 flex flex-col">
+                            <div class="max-h-12 overflow-y-auto pr-1">
+                                <div id="lista-texto-horarios-dia" class="text-[10px] text-slate-600 leading-tight">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div
+                            class="md:col-span-9 flex flex-col space-y-1 pl-0 md:pl-2 border-t md:border-t-0 md:border-l border-slate-200 pt-1 md:pt-0">
+                            <div class="flex items-center justify-between text-[11px]">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-slate-700 uppercase tracking-wider text-[10px]">DÍA:</span>
+                                    <select id="sim-dia"
+                                        class="rounded border-gray-300 text-[10px] sm:text-xs shadow-2xs focus:border-blue-500 focus:ring-blue-500 py-0.5 px-1.5 w-24">
+                                        <option value="Lunes">Lunes</option>
+                                        <option value="Martes">Martes</option>
+                                        <option value="Miércoles">Miércoles</option>
+                                        <option value="Jueves">Jueves</option>
+                                        <option value="Viernes">Viernes</option>
+                                        <option value="Sábado">Sábado</option>
+                                        <option value="Domingo">Domingo</option>
+                                    </select>
+                                    <div class="truncate px-1 text-[10px] sm:text-xs">
+                                        <span class="text-slate-500">Red:</span>
+                                        <span id="sim-red-activa-label"
+                                            class="text-emerald-700 font-bold ml-0.5">Ninguna</span>
+                                    </div>
+                                </div>
+                                <div class="shrink-0 text-[10px] sm:text-xs">
+                                    <span class="text-slate-500">Hora:</span>
+                                    <span id="sim-hora-label" class="text-blue-600 font-bold ml-0.5">00:00 hrs</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center space-x-2">
+                                <button type="button" id="sim-play-btn"
+                                    class="bg-blue-600 hover:bg-blue-700 text-white w-5 h-5 rounded-full flex items-center justify-center shadow-2xs transition shrink-0 cursor-pointer"
+                                    title="Reproducir / Pausa">
+                                    <span id="sim-play-icon" class="text-[8px] font-bold">&#9658;</span>
+                                </button>
+
+                                <div class="flex-1">
+                                    <input type="range" id="sim-slider" min="0" max="23.75" value="0" step="0.25"
+                                        style="background: #cbd5e1;"
+                                        class="w-full h-1 rounded-lg appearance-none cursor-pointer accent-blue-700 border border-slate-300">
+
+                                    <div
+                                        class="flex justify-between text-[9px] text-slate-500 font-mono mt-0.5 select-none px-0.5">
+                                        <span>00</span><span>03</span><span>06</span><span>09</span>
+                                        <span>12</span><span>15</span><span>18</span><span>21</span><span>23</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
+                <!-- Contenedor del Mapa -->
+                <div id="map-general" class="w-full h-[450px] lg:h-auto lg:flex-1 rounded-md shadow-inner z-0"></div>
             </div>
+
         </div>
     </div>
 
@@ -285,8 +255,8 @@
         function normalizarTexto(texto) {
             if (!texto) return '';
             return texto.toLowerCase()
-                        .normalize("NFD")
-                        .replace(/[\u0300-\u036f]/g, "").trim();
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "").trim();
         }
 
         function extraerHoraDecimal(timeStr) {
@@ -316,14 +286,15 @@
 
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 19,
-                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                attribution: 'Tiles &copy; Esri'
             }).addTo(map);
+
+            setTimeout(() => { map.invalidateSize(); }, 250);
 
             var redLayers = {};
             var markerLayers = {};
             var allBounds = L.featureGroup();
 
-            // 1. Construir capas de Redes (SIN .addTo(map) inicial para que inicien ocultas)
             redes.forEach(function (red) {
                 var redGroup = L.layerGroup();
 
@@ -347,16 +318,16 @@
                             if (latLngs.length > 0) {
                                 var polyline = L.polyline(latLngs, {
                                     color: '#06b6d4',
-                                    weight: 6,
+                                    weight: 5,
                                     opacity: 0.9
                                 });
 
                                 polyline.bindPopup(`
-                                    <div class="p-1 text-sm">
+                                    <div class="p-1 text-xs">
                                         <strong>Circuito:</strong> ${red.nombre}<br>
                                         <strong>Tramo:</strong> ${tramo.nombre_tramo} (${tramo.diametro_pulgadas}")<br>
                                         <hr class="my-1">
-                                        <strong>Horarios de Suministro:</strong>
+                                        <strong>Horarios:</strong>
                                         ${horariosHtml}
                                     </div>
                                 `);
@@ -371,7 +342,6 @@
                 redLayers[red.id] = redGroup;
             });
 
-            // 2. Construir marcadores de Tomas de Agua (SIN .addTo(map) inicial)
             usuarios.forEach(function (usuario) {
                 if (usuario.latitud && usuario.longitud) {
                     let estadoBadge = '<span style="color: green; font-weight: bold;">ACTIVO</span>';
@@ -379,7 +349,7 @@
                     if (usuario.estado_servicio === 'cortado') estadoBadge = '<span style="color: red; font-weight: bold;">CORTADO</span>';
 
                     var popupContent = `
-                        <div class="p-1 text-sm">
+                        <div class="p-1 text-xs">
                             <strong>Folio:</strong> ${usuario.folio}<br>
                             <strong>Titular:</strong> ${usuario.nombre_completo}<br>
                             <strong>Dirección:</strong> ${usuario.direccion}<br>
@@ -395,7 +365,7 @@
             });
 
             if (allBounds.getLayers().length > 0) {
-                map.fitBounds(allBounds.getBounds(), { padding: [50, 50] });
+                map.fitBounds(allBounds.getBounds(), { padding: [30, 30] });
             }
 
             function formatearHoraLabel(valorDecimal) {
@@ -406,7 +376,6 @@
                 return hStr + ':' + mStr + ' hrs';
             }
 
-            // --- VARIABLES Y LÓGICA DE SIMULACIÓN ---
             let simInterval = null;
             const sliderHora = document.getElementById('sim-slider');
             const horaLabel = document.getElementById('sim-hora-label');
@@ -450,13 +419,11 @@
                     });
                 }
 
-                // ORDENAR ASCENDENTE POR HORA DE INICIO
                 turnosArray.sort((a, b) => a.decimalInicio - b.decimalInicio);
-
                 let turnosTexto = turnosArray.map(t => `• <b>${t.nombreRed}</b>: ${t.inicioStr} - ${t.finStr}`);
 
                 if (turnosTexto.length === 0) {
-                    listaTextoHorariosDia.innerHTML = '<span class="text-gray-400 italic">Sin turnos para este día.</span>';
+                    listaTextoHorariosDia.innerHTML = '<span class="text-gray-400 italic">Sin turnos.</span>';
                 } else {
                     listaTextoHorariosDia.innerHTML = turnosTexto.join('<br>');
                 }
@@ -474,9 +441,7 @@
                                 const hInicio = extraerHoraDecimal(h.hora_inicio);
                                 const hFin = extraerHoraDecimal(h.hora_fin);
 
-                                if (horaDecimal >= hInicio && horaDecimal < hFin) {
-                                    return true;
-                                }
+                                if (horaDecimal >= hInicio && horaDecimal < hFin) return true;
                             }
                         }
                     }
@@ -486,7 +451,7 @@
 
             function actualizarBarraVisualServicio() {
                 const diaSeleccionado = normalizarTexto(selectDia.value);
-                const totalPasos = 96; // 24 horas * 4 bloques de 15 min
+                const totalPasos = 96;
                 let stops = [];
 
                 for (let paso = 0; paso < totalPasos; paso++) {
@@ -495,7 +460,6 @@
                     const pctFin = ((paso + 1) / totalPasos) * 100;
 
                     const color = hayServicioEnHora(diaSeleccionado, horaActual) ? '#3b82f6' : '#cbd5e1';
-                    
                     stops.push(`${color} ${pctInicio.toFixed(2)}%`);
                     stops.push(`${color} ${pctFin.toFixed(2)}%`);
                 }
@@ -509,34 +473,22 @@
                 horaLabel.innerText = formatearHoraLabel(horaActualDecimal);
 
                 let redesActivasIds = [];
+                if (!redes || redes.length === 0) return;
 
-                if (!redes || redes.length === 0) {
-                    return;
-                }
-
-                // 1. Evaluar qué redes tienen servicio en este día y hora exacta
                 redes.forEach(red => {
                     let tieneServicioAhora = false;
-
                     if (red.horarios && Array.isArray(red.horarios) && red.horarios.length > 0) {
                         red.horarios.forEach(h => {
                             if (verificarCoincidenciaDia(h.dia_semana, diaSeleccionado) && h.hora_inicio && h.hora_fin) {
                                 let hInicioDec = extraerHoraDecimal(h.hora_inicio);
                                 let hFinDec = extraerHoraDecimal(h.hora_fin);
-
-                                if (horaActualDecimal >= hInicioDec && horaActualDecimal < hFinDec) {
-                                    tieneServicioAhora = true;
-                                }
+                                if (horaActualDecimal >= hInicioDec && horaActualDecimal < hFinDec) tieneServicioAhora = true;
                             }
                         });
                     }
-
-                    if (tieneServicioAhora) {
-                        redesActivasIds.push(red.id);
-                    }
+                    if (tieneServicioAhora) redesActivasIds.push(red.id);
                 });
 
-                // Actualizar etiqueta superior con la red o redes activas
                 if (simRedActivaLabel) {
                     if (redesActivasIds.length === 0) {
                         simRedActivaLabel.innerText = 'Ninguna';
@@ -551,7 +503,6 @@
                     }
                 }
 
-                // 2. Controlar Redes (Tuberías) en el Mapa y sus checkboxes principales
                 redes.forEach(red => {
                     const redId = red.id;
                     const layerGroup = redLayers[redId];
@@ -560,29 +511,21 @@
 
                     if (layerGroup) {
                         if (estaActiva) {
-                            if (!map.hasLayer(layerGroup)) {
-                                map.addLayer(layerGroup);
-                            }
+                            if (!map.hasLayer(layerGroup)) map.addLayer(layerGroup);
                             if (checkboxRed) checkboxRed.checked = true;
                         } else {
-                            if (map.hasLayer(layerGroup)) {
-                                map.removeLayer(layerGroup);
-                            }
+                            if (map.hasLayer(layerGroup)) map.removeLayer(layerGroup);
                             if (checkboxRed) checkboxRed.checked = false;
                         }
                     }
                 });
 
-                // 3. LIMPIEZA TOTAL INICIAL: Desmarcar TODOS los checkboxes de tomas individuales y padres por defecto
-                document.querySelectorAll('.cb-toma-individual').forEach(cb => {
-                    cb.checked = false;
-                });
+                document.querySelectorAll('.cb-toma-individual').forEach(cb => cb.checked = false);
                 document.querySelectorAll('.cb-red-tomas').forEach(cbPadre => {
                     cbPadre.checked = false;
                     cbPadre.indeterminate = false;
                 });
 
-                // 4. ACTIVAR SOLAMENTE LAS TOMAS QUE CORRESPONDEN A LAS REDES CON SERVICIO EN ESTA HORA
                 usuarios.forEach(usuario => {
                     const usuarioId = usuario.id;
                     const marker = markerLayers[usuarioId];
@@ -592,20 +535,15 @@
 
                     if (marker) {
                         if (redActiva) {
-                            if (!map.hasLayer(marker)) {
-                                map.addLayer(marker);
-                            }
+                            if (!map.hasLayer(marker)) map.addLayer(marker);
                             if (checkboxToma) checkboxToma.checked = true;
                         } else {
-                            if (map.hasLayer(marker)) {
-                                map.removeLayer(marker);
-                            }
+                            if (map.hasLayer(marker)) map.removeLayer(marker);
                             if (checkboxToma) checkboxToma.checked = false;
                         }
                     }
                 });
 
-                // 5. Sincronizar checkboxes padres (Tomas) del panel izquierdo según los hijos activos
                 document.querySelectorAll('.cb-red-tomas').forEach(cbPadre => {
                     const redId = cbPadre.dataset.redId;
                     const todosHijos = document.querySelectorAll(`.cb-toma-red-${redId}`);
@@ -618,7 +556,6 @@
                 });
             }
 
-            // Eventos del simulador
             sliderHora.addEventListener('input', ejecutarSimulacion);
 
             selectDia.addEventListener('change', function () {
@@ -629,7 +566,6 @@
                     playBtn.classList.remove('bg-amber-600', 'hover:bg-amber-700');
                     playBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
                 }
-
                 sliderHora.value = 0;
                 actualizarListaTextoHorarios();
                 actualizarBarraVisualServicio();
@@ -654,19 +590,15 @@
                     playBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
                     playBtn.classList.add('bg-amber-600', 'hover:bg-amber-700');
 
-                    // Intervalo de avance continuo (cada 600ms avanza 15 minutos en pantalla)
                     simInterval = setInterval(() => {
                         horaVal = parseFloat(sliderHora.value);
-
                         if (horaVal < 23.75) {
-                            horaVal += 0.25; // Incrementa de 15 en 15 minutos
+                            horaVal += 0.25;
                             sliderHora.value = horaVal;
                             ejecutarSimulacion();
                         } else {
-                            // Al llegar al final del día, reinicia a 00:00 y se detiene
                             sliderHora.value = 0;
                             ejecutarSimulacion();
-
                             clearInterval(simInterval);
                             simInterval = null;
                             playIcon.innerHTML = '&#9658;';
@@ -677,21 +609,16 @@
                 }
             });
 
-            // --- EVENTO DE CHECKBOX GLOBAL PARA HORARIOS ---
             const cbMostrarHorarios = document.getElementById('cb-mostrar-horarios');
             if (cbMostrarHorarios) {
                 cbMostrarHorarios.addEventListener('change', function () {
                     document.querySelectorAll('.seccion-horario-red').forEach(seccion => {
-                        if (this.checked) {
-                            seccion.classList.remove('hidden');
-                        } else {
-                            seccion.classList.add('hidden');
-                        }
+                        if (this.checked) seccion.classList.remove('hidden');
+                        else seccion.classList.add('hidden');
                     });
                 });
             }
 
-            // --- EVENTOS DE CHECKBOXES MANUALES DE REDES Y TOMAS ---
             document.querySelectorAll('.cb-red-tuberia').forEach(cb => {
                 cb.addEventListener('change', function () {
                     const redId = this.value;
@@ -710,9 +637,7 @@
                     document.querySelectorAll(`.cb-toma-red-${redId}`).forEach(cbHijo => {
                         cbHijo.checked = isChecked;
                         const marker = markerLayers[cbHijo.value];
-                        if (marker) {
-                            isChecked ? map.addLayer(marker) : map.removeLayer(marker);
-                        }
+                        if (marker) isChecked ? map.addLayer(marker) : map.removeLayer(marker);
                     });
                 });
             });
@@ -723,9 +648,7 @@
                     const redId = this.dataset.redId;
                     const marker = markerLayers[usuarioId];
 
-                    if (marker) {
-                        this.checked ? map.addLayer(marker) : map.removeLayer(marker);
-                    }
+                    if (marker) this.checked ? map.addLayer(marker) : map.removeLayer(marker);
 
                     const todosHijos = document.querySelectorAll(`.cb-toma-red-${redId}`);
                     const hijosMarcados = document.querySelectorAll(`.cb-toma-red-${redId}:checked`);
@@ -770,7 +693,6 @@
                 });
             });
 
-            // EJECUTAR SIMULACIÓN AL CARGAR
             actualizarListaTextoHorarios();
             actualizarBarraVisualServicio();
             ejecutarSimulacion();

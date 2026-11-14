@@ -1,12 +1,9 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <div class="flex justify-between items-center min-w-0">
+            <h2 class="font-semibold text-xs sm:text-sm md:text-base lg:text-xl text-gray-800 leading-tight truncate min-w-0" title="Gestión de Redes de Agua">
                 {{ __('Gestión de Redes de Agua') }}
             </h2>
-            <a href="{{ route('redes.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold shadow">
-                + Nueva Red
-            </a>
         </div>
     </x-slot>
 
@@ -14,80 +11,87 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <!-- CONTENEDOR DE ANCHO COMPLETO Y DINÁMICO -->
+    <div class="py-2 px-2 sm:px-3 w-full">
+        <div class="bg-white overflow-hidden shadow-2xs rounded-lg p-3 w-full">
             
             @if(session('success'))
-                <div class="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+                <div class="mb-3 bg-green-100 border border-green-400 text-green-700 px-3 py-1.5 rounded text-xs" role="alert">
                     <span class="block sm:inline">{{ session('success') }}</span>
                 </div>
             @endif
 
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <!-- Se usa sm:overflow-x-auto para que solo aparezca scroll si la pantalla es muy pequeña -->
-                <div class="p-6 text-gray-900 w-full sm:overflow-x-auto">
-                    <table class="w-full divide-y divide-gray-200 table-auto">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/5">Nombre de la Red</th>
-                                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-2/5">Descripción</th>
-                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Horarios</th>
-                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tramos</th>
-                                <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tomas</th>
-                                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($redes as $red)
-                                <tr>
-                                    <td class="px-3 py-3 text-sm font-medium text-gray-900">
-                                        {{ $red->nombre }}
-                                    </td>
-                                    <td class="px-3 py-3 text-sm text-gray-500">
-                                        {{ $red->descripcion ?? 'Sin descripción' }}
-                                    </td>
-                                    <td class="px-2 py-3 text-center text-sm text-gray-500">
-                                        <span class="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            {{ $red->horarios_count }}
-                                        </span>
-                                    </td>
-                                    <td class="px-2 py-3 text-center text-sm text-gray-500">
-                                        <span class="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
-                                            {{ $red->tramos_count }}
-                                        </span>
-                                    </td>
-                                    <td class="px-2 py-3 text-center text-sm text-gray-500">
-                                        <span class="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                            {{ $red->usuarios_count }}
-                                        </span>
-                                    </td>
-                                    <td class="px-3 py-3 text-right text-sm font-medium whitespace-nowrap">
-                                        <button type="button" 
-                                            class="btn-ver-red text-indigo-600 hover:text-indigo-900 mr-2 font-semibold cursor-pointer"
-                                            data-nombre="{{ $red->nombre }}"
-                                            data-tramos="{{ json_encode($red->tramos) }}">
-                                            Ver
-                                        </button>
-
-                                        <a href="{{ route('redes.edit', $red) }}" class="text-yellow-600 hover:text-yellow-900 mr-2">Editar</a>
-                                        <form action="{{ route('redes.destroy', $red) }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar esta red?');">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">Eliminar</button>
-                                        </form>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
-                                        No hay redes registradas todavía. ¡Crea una nueva!
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+            <!-- BOTÓN NUEVA RED ALINEADO A LA DERECHA (Sin recuadro gris) -->
+            <div class="flex justify-end items-center mb-2.5">
+                <a href="{{ route('redes.create') }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3.5 py-1.5 rounded-md text-[11px] sm:text-xs font-semibold shadow-2xs transition inline-flex items-center gap-1 cursor-pointer">
+                    + Nueva Red
+                </a>
             </div>
+
+            <!-- Tabla de Redes con Scroll Interno Controlado -->
+            <div class="border rounded-lg max-h-[calc(100vh-210px)] overflow-y-auto overflow-x-auto shadow-2xs">
+                <table class="min-w-full divide-y divide-gray-200 text-xs sm:text-xs lg:text-[13.5px] border-collapse">
+                    <thead class="bg-gray-100 sticky top-0 z-20">
+                        <tr>
+                            <th class="px-3 py-2.5 text-left font-medium text-gray-600 uppercase tracking-wider w-1/5 text-xs sm:text-xs lg:text-xs">Nombre de la Red</th>
+                            <th class="px-3 py-2.5 text-left font-medium text-gray-600 uppercase tracking-wider w-2/5 text-xs sm:text-xs lg:text-xs">Descripción</th>
+                            <th class="px-2 py-2.5 text-center font-medium text-gray-600 uppercase tracking-wider text-xs sm:text-xs lg:text-xs">Horarios</th>
+                            <th class="px-2 py-2.5 text-center font-medium text-gray-600 uppercase tracking-wider text-xs sm:text-xs lg:text-xs">Tramos</th>
+                            <th class="px-2 py-2.5 text-center font-medium text-gray-600 uppercase tracking-wider text-xs sm:text-xs lg:text-xs">Tomas</th>
+                            <th class="px-3 py-2.5 text-right font-medium text-gray-600 uppercase tracking-wider text-xs sm:text-xs lg:text-xs">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        @forelse($redes as $red)
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-3 py-2.5 font-bold text-gray-900 text-xs sm:text-xs lg:text-[13.5px]">
+                                    {{ $red->nombre }}
+                                </td>
+                                <td class="px-3 py-2.5 text-gray-500 text-xs sm:text-xs lg:text-[13.5px]">
+                                    {{ $red->descripcion ?? 'Sin descripción' }}
+                                </td>
+                                <td class="px-2 py-2.5 text-center text-gray-500">
+                                    <span class="px-2 py-0.5 inline-flex text-[10px] sm:text-[11px] lg:text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        {{ $red->horarios_count }}
+                                    </span>
+                                </td>
+                                <td class="px-2 py-2.5 text-center text-gray-500">
+                                    <span class="px-2 py-0.5 inline-flex text-[10px] sm:text-[11px] lg:text-xs leading-5 font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                        {{ $red->tramos_count }}
+                                    </span>
+                                </td>
+                                <td class="px-2 py-2.5 text-center text-gray-500">
+                                    <span class="px-2 py-0.5 inline-flex text-[10px] sm:text-[11px] lg:text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        {{ $red->usuarios_count }}
+                                    </span>
+                                </td>
+                                <td class="px-3 py-2.5 text-right font-medium whitespace-nowrap text-xs sm:text-xs lg:text-[13.5px]">
+                                    <button type="button" 
+                                        class="btn-ver-red text-indigo-600 hover:text-indigo-900 mr-2 font-semibold cursor-pointer"
+                                        data-nombre="{{ $red->nombre }}"
+                                        data-tramos="{{ json_encode($red->tramos) }}">
+                                        Ver
+                                    </button>
+
+                                    <a href="{{ route('redes.edit', $red) }}" class="text-yellow-600 hover:text-yellow-900 mr-2 font-semibold">Editar</a>
+                                    <form action="{{ route('redes.destroy', $red) }}" method="POST" class="inline" onsubmit="return confirm('¿Estás seguro de eliminar esta red?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="text-red-600 hover:text-red-900 font-semibold cursor-pointer">Eliminar</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-3 py-6 text-center text-gray-400">
+                                    No hay redes registradas todavía. ¡Crea una nueva!
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+
         </div>
     </div>
 

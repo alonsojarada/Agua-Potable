@@ -1,61 +1,67 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Editar Toma de Agua y Ubicación') }}
-        </h2>
+        <div class="flex justify-between items-center min-w-0">
+            <h2 class="font-semibold text-xs sm:text-sm md:text-base lg:text-xl text-gray-800 leading-tight truncate min-w-0" title="Editar Toma de Agua y Ubicación">
+                {{ __('Editar Toma de Agua y Ubicación') }}
+            </h2>
+        </div>
     </x-slot>
 
     <!-- Cargar CSS de Leaflet -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+    <!-- CONTENEDOR ADAPTATIVO -->
+    <div class="py-2 px-2 sm:px-3 w-full">
+        <div class="bg-transparent overflow-hidden rounded-lg p-0 w-full h-auto lg:h-[calc(100vh-125px)] flex flex-col">
+            
+            @if ($errors->any())
+                <div class="mb-2 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded text-xs shrink-0">
+                    <ul class="list-disc list-inside">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
+
+            <form action="{{ route('usuarios.update', $usuario) }}" method="POST" class="flex-1 flex flex-col min-h-0">
+                @csrf
+                @method('PUT')
+
+                <!-- DISEÑO RESPONSIVO: Dos columnas simétricas -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 h-auto lg:h-full min-h-0">
                     
-                    @if ($errors->any())
-                        <div class="mb-3 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded relative text-sm">
-                            <ul class="list-disc list-inside">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+                    <!-- ================= COLUMNA IZQUIERDA: FORMULARIO ================= -->
+                    <div class="lg:col-span-5 xl:col-span-4 bg-gray-50 border border-gray-200 rounded-lg p-3.5 shadow-2xs flex flex-col h-auto lg:h-full overflow-y-auto">
+                        <div class="space-y-3 flex-1">
+                            <h3 class="font-bold text-gray-800 text-xs sm:text-sm mb-1 uppercase">Datos de la Toma</h3>
 
-                    <form action="{{ route('usuarios.update', $usuario) }}" method="POST">
-                        @csrf
-                        @method('PUT')
-
-                        <!-- Fila 1: Folio (Solo lectura) y Red o Circuito Asignado -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <!-- Folio (Solo lectura) -->
                             <div>
-                                <label for="folio" class="block text-xs font-medium text-gray-700">Folio / Número de Toma (Sistema)</label>
+                                <label for="folio" class="block text-xs font-medium text-gray-700 mb-1">Folio / Número de Toma</label>
                                 <input type="text" name="folio" id="folio" value="{{ old('folio', $usuario->folio) }}" readonly
-                                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 text-gray-600 shadow-sm sm:text-sm cursor-not-allowed">
+                                    class="w-full rounded-md border-gray-300 bg-gray-100 text-gray-600 text-xs sm:text-sm py-2 px-3 cursor-not-allowed">
                             </div>
 
+                            <!-- Red o Circuito -->
                             <div>
-                                <label for="red_id" class="block text-xs font-medium text-gray-700">Red o Circuito Asignado</label>
+                                <label for="red_id" class="block text-xs font-medium text-gray-700 mb-1">Red o Circuito Asignado</label>
                                 <select name="red_id" id="red_id" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500">
                                     @foreach($redes as $red)
                                         <option value="{{ $red->id }}" {{ old('red_id', $usuario->red_id) == $red->id ? 'selected' : '' }}>{{ $red->nombre }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                        </div>
 
-                        <!-- Fila 2: Tarifa Mensual Asignada (con botón + Nueva) y Estado del Servicio -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <!-- Tarifa Mensual con Botón -->
                             <div>
-                                <label for="tarifa_id" class="block text-xs font-medium text-gray-700">Tarifa Mensual Asignada</label>
-                                <div class="flex items-center gap-2 mt-1">
+                                <label for="tarifa_id" class="block text-xs font-medium text-gray-700 mb-1">Tarifa Mensual Asignada</label>
+                                <div class="flex items-center gap-2">
                                     <select name="tarifa_id" id="select-tarifa" required
-                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                        class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500">
                                         <option value="">Seleccione una tarifa...</option>
                                         @foreach($tarifas as $tarifa)
-                                            {{-- Muestra las activas o la que ya tiene asignada el usuario aunque esté dada de baja --}}
                                             @if($tarifa->estatus || $usuario->tarifa_id == $tarifa->id)
                                                 <option value="{{ $tarifa->id }}" {{ old('tarifa_id', $usuario->tarifa_id) == $tarifa->id ? 'selected' : '' }}>
                                                     {{ $tarifa->nombre }} (${{ number_format($tarifa->monto_mensual, 2) }})
@@ -63,85 +69,89 @@
                                             @endif
                                         @endforeach
                                     </select>
-                                    
-                                    <!-- Botón para abrir el modal en forma de tabla -->
                                     <button type="button" onclick="abrirModalTarifa()" 
-                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md text-xs font-semibold shadow shrink-0 cursor-pointer">
-                                        + Nueva / Gestionar
+                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md text-xs font-semibold shadow-2xs shrink-0 cursor-pointer">
+                                        + Nueva
                                     </button>
                                 </div>
                             </div>
 
+                            <!-- Estado del Servicio -->
                             <div>
-                                <label for="estado_servicio" class="block text-xs font-medium text-gray-700">Estado del Servicio</label>
+                                <label for="estado_servicio" class="block text-xs font-medium text-gray-700 mb-1">Estado del Servicio</label>
                                 <select name="estado_servicio" id="estado_servicio" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500">
                                     <option value="activo" {{ $usuario->estado_servicio == 'activo' ? 'selected' : '' }}>Activo</option>
                                     <option value="suspendido" {{ $usuario->estado_servicio == 'suspendido' ? 'selected' : '' }}>Suspendido</option>
                                     <option value="cortado" {{ $usuario->estado_servicio == 'cortado' ? 'selected' : '' }}>Cortado</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <!-- Fila 3: Nombre del Titular y Teléfono (Opcional) -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <!-- Nombre del Titular -->
                             <div>
-                                <label for="nombre_completo" class="block text-xs font-medium text-gray-700">Nombre del Titular</label>
+                                <label for="nombre_completo" class="block text-xs font-medium text-gray-700 mb-1">Nombre del Titular</label>
                                 <input type="text" name="nombre_completo" id="nombre_completo" value="{{ old('nombre_completo', $usuario->nombre_completo) }}" required
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
+                            <!-- Teléfono -->
                             <div>
-                                <label for="telefono" class="block text-xs font-medium text-gray-700">Teléfono de Contacto <span class="text-gray-400 font-normal">(Opcional)</span></label>
+                                <label for="telefono" class="block text-xs font-medium text-gray-700 mb-1">Teléfono <span class="text-gray-400 font-normal">(Opcional)</span></label>
                                 <input type="text" name="telefono" id="telefono" value="{{ old('telefono', $usuario->telefono) }}"
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                            </div>
-                        </div>
-
-                        <!-- Fila 4: Dirección del Predio (Opcional) -->
-                        <div class="mb-3">
-                            <label for="direccion" class="block text-xs font-medium text-gray-700">Dirección del Predio <span class="text-gray-400 font-normal">(Opcional)</span></label>
-                            <input type="text" name="direccion" id="direccion" value="{{ old('direccion', $usuario->direccion) }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                                placeholder="Calle, Número, Colonia...">
-                        </div>
-
-                        <!-- Fila 5: Mapa interactivo compacto (260px) -->
-                        <div class="mb-3">
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Actualizar Ubicación (Haz clic en el mapa o arrastra el marcador para reubicar la toma)</label>
-                            <div id="map-picker" style="height: 260px;" class="rounded-lg border border-gray-300 z-0"></div>
-                        </div>
-
-                        <!-- Fila 6: Latitud y Longitud compactas -->
-                        <div class="grid grid-cols-2 gap-3 mb-4">
-                            <div>
-                                <label for="latitud" class="block text-xs font-medium text-gray-700">Latitud</label>
-                                <input type="text" name="latitud" id="latitud" value="{{ old('latitud', $usuario->latitud) }}" required readonly
-                                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm">
+                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
+                            <!-- Dirección -->
                             <div>
-                                <label for="longitud" class="block text-xs font-medium text-gray-700">Longitud</label>
-                                <input type="text" name="longitud" id="longitud" value="{{ old('longitud', $usuario->longitud) }}" required readonly
-                                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm">
+                                <label for="direccion" class="block text-xs font-medium text-gray-700 mb-1">Dirección del Predio <span class="text-gray-400 font-normal">(Opcional)</span></label>
+                                <input type="text" name="direccion" id="direccion" value="{{ old('direccion', $usuario->direccion) }}"
+                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500"
+                                    placeholder="Calle, Número, Colonia...">
+                            </div>
+
+                            <!-- Coordenadas Ocultas / Resumen -->
+                            <div class="grid grid-cols-2 gap-2 pt-1">
+                                <div>
+                                    <label for="latitud" class="block text-[10px] font-medium text-gray-500">Latitud</label>
+                                    <input type="text" name="latitud" id="latitud" value="{{ old('latitud', $usuario->latitud) }}" required readonly
+                                        class="w-full rounded-md border-gray-300 bg-gray-100 text-xs py-1 px-2">
+                                </div>
+                                <div>
+                                    <label for="longitud" class="block text-[10px] font-medium text-gray-500">Longitud</label>
+                                    <input type="text" name="longitud" id="longitud" value="{{ old('longitud', $usuario->longitud) }}" required readonly
+                                        class="w-full rounded-md border-gray-300 bg-gray-100 text-xs py-1 px-2">
+                                </div>
                             </div>
                         </div>
 
                         <!-- Botones de Acción -->
-                        <div class="flex items-center justify-end mt-3">
-                            <a href="{{ route('usuarios.index') }}" class="text-gray-600 hover:text-gray-900 mr-4 text-sm font-semibold">Cancelar</a>
-                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold shadow">
-                                Actualizar Toma
+                        <div class="flex items-center gap-2 pt-4 mt-4 border-t border-gray-200 shrink-0">
+                            <a href="{{ route('usuarios.index') }}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-3 rounded-md text-xs sm:text-sm font-semibold shadow-2xs transition text-center cursor-pointer">
+                                Cancelar
+                            </a>
+                            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-md text-xs sm:text-sm font-semibold shadow-2xs transition text-center cursor-pointer">
+                                Actualizar
                             </button>
                         </div>
-                    </form>
+                    </div>
+
+                    <!-- ================= COLUMNA DERECHA: MAPA EXPANDIDO ================= -->
+                    <div class="lg:col-span-7 xl:col-span-8 bg-white border border-gray-200 rounded-lg p-3 shadow-2xs flex flex-col h-[450px] lg:h-full">
+                        <div class="flex justify-between items-center mb-2 shrink-0">
+                            <label class="block text-[11px] sm:text-xs font-bold text-gray-700">Actualizar Ubicación (Haz clic o arrastra el marcador para reubicar)</label>
+                        </div>
+                        
+                        <!-- Mapa interactivo -->
+                        <div id="map-picker" class="w-full flex-1 rounded-md border border-gray-300 shadow-inner z-0"></div>
+                    </div>
 
                 </div>
-            </div>
+            </form>
+
         </div>
     </div>
 
-    <!-- MODAL DE GESTIÓN DE TARIFAS (VERSIÓN SIMPLE CON SCROLL) -->
+    <!-- MODAL DE GESTIÓN DE TARIFAS -->
     <div id="modal-tarifa" onclick="if(event.target === this) cerrarModalTarifa()" class="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-60 flex items-center justify-center p-4" style="display: none;">
         <div class="bg-white rounded-lg shadow-xl sm:max-w-xl sm:w-full p-5">
             
@@ -150,7 +160,6 @@
                 <button type="button" onclick="cerrarModalTarifa()" class="text-gray-400 hover:text-gray-700 font-bold text-xl leading-none cursor-pointer">&times;</button>
             </div>
 
-            <!-- Formulario integrado en una sola línea compacta -->
             <form id="form-tarifa-ajax" class="flex gap-2 items-end mb-4">
                 @csrf
                 <div class="flex-1">
@@ -168,7 +177,6 @@
                 </div>
             </form>
 
-            <!-- Tabla con tamaño máximo y scroll vertical habilitado -->
             <div class="max-h-52 overflow-y-auto border rounded-md">
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50 sticky top-0">
@@ -180,7 +188,6 @@
                         </tr>
                     </thead>
                     <tbody id="tabla-tarifas-cuerpo" class="bg-white divide-y divide-gray-200">
-                        <!-- Dinámico vía JS -->
                     </tbody>
                 </table>
             </div>
@@ -206,7 +213,7 @@
 
             L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 19,
-                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+                attribution: 'Tiles &copy; Esri'
             }).addTo(map);
 
             var marker = L.marker([currentLat, currentLng], {draggable: true}).addTo(map);
@@ -219,7 +226,6 @@
             map.on('click', function(e) {
                 var lat = e.latlng.lat;
                 var lng = e.latlng.lng;
-                
                 marker.setLatLng([lat, lng]);
                 updateInputs(lat, lng);
             });
@@ -228,9 +234,10 @@
                 var position = marker.getLatLng();
                 updateInputs(position.lat, position.lng);
             });
+
+            setTimeout(() => { map.invalidateSize(); }, 250);
         });
 
-        // Funciones para el Modal y AJAX de Tarifas
         function abrirModalTarifa() {
             document.getElementById('modal-tarifa').style.display = 'flex';
             cargarTarifasTabla();
@@ -253,15 +260,11 @@
 
                 data.forEach(tarifa => {
                     const esActivo = Boolean(tarifa.estatus);
-                    
                     const badge = esActivo 
                         ? '<span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">Activa</span>' 
                         : '<span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">Baja</span>';
-                    
                     const btnText = esActivo ? 'Dar de baja' : 'Activar';
-                    const btnClass = esActivo 
-                        ? 'bg-red-50 text-red-600 hover:bg-red-100' 
-                        : 'bg-green-50 text-green-600 hover:bg-green-100';
+                    const btnClass = esActivo ? 'bg-red-50 text-red-600 hover:bg-red-100' : 'bg-green-50 text-green-600 hover:bg-green-100';
 
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
@@ -296,10 +299,7 @@
                     'X-CSRF-TOKEN': token,
                     'Accept': 'application/json'
                 },
-                body: JSON.stringify({
-                    nombre: nombre,
-                    monto_mensual: monto
-                })
+                body: JSON.stringify({ nombre: nombre, monto_mensual: monto })
             })
             .then(response => response.json())
             .then(data => {
@@ -309,16 +309,11 @@
                 } else {
                     alert('Error al guardar la tarifa.');
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Ocurrió un error inesperado al procesar la solicitud.');
             });
         }
 
         function toggleStatusTarifa(id) {
             const token = document.querySelector('input[name="_token"]').value;
-
             fetch(`/tarifas/${id}/toggle-status`, {
                 method: 'POST',
                 headers: {
@@ -329,12 +324,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success) {
-                    cargarTarifasTabla();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+                if (data.success) { cargarTarifasTabla(); }
             });
         }
 
@@ -346,12 +336,10 @@
             .then(data => {
                 const select = document.getElementById('select-tarifa');
                 if (!select) return;
-
                 const valorActual = select.value;
                 select.innerHTML = '<option value="">Seleccione una tarifa...</option>';
 
                 data.forEach(tarifa => {
-                    // Muestra las activas o la que ya tuviera seleccionada el usuario
                     if (Boolean(tarifa.estatus) || tarifa.id == valorActual) {
                         const option = document.createElement('option');
                         option.value = tarifa.id;

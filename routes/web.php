@@ -41,6 +41,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/pagos/{pago}/anular', [PagoController::class, 'anular'])->name('pagos.anular');
 
     Route::get('/pagos/{pago}/ticket', [PagoController::class, 'ticket'])->name('pagos.ticket');
+    Route::get('/pagos/{pago}/comprobante', [PagoController::class, 'comprobante'])->name('pagos.comprobante');
 
 });
 
