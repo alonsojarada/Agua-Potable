@@ -1,0 +1,366 @@
+<x-app-layout>
+    <x-slot name="header">
+        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('Editar Toma de Agua y Ubicación') }}
+        </h2>
+    </x-slot>
+
+    <!-- Cargar CSS de Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+    <div class="py-6">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6 text-gray-900">
+                    
+                    @if ($errors->any())
+                        <div class="mb-3 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded relative text-sm">
+                            <ul class="list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+
+                    <form action="{{ route('usuarios.update', $usuario) }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <!-- Fila 1: Folio (Solo lectura) y Red o Circuito Asignado -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label for="folio" class="block text-xs font-medium text-gray-700">Folio / Número de Toma (Sistema)</label>
+                                <input type="text" name="folio" id="folio" value="{{ old('folio', $usuario->folio) }}" readonly
+                                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 text-gray-600 shadow-sm sm:text-sm cursor-not-allowed">
+                            </div>
+
+                            <div>
+                                <label for="red_id" class="block text-xs font-medium text-gray-700">Red o Circuito Asignado</label>
+                                <select name="red_id" id="red_id" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    @foreach($redes as $red)
+                                        <option value="{{ $red->id }}" {{ old('red_id', $usuario->red_id) == $red->id ? 'selected' : '' }}>{{ $red->nombre }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Fila 2: Tarifa Mensual Asignada (con botón + Nueva) y Estado del Servicio -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label for="tarifa_id" class="block text-xs font-medium text-gray-700">Tarifa Mensual Asignada</label>
+                                <div class="flex items-center gap-2 mt-1">
+                                    <select name="tarifa_id" id="select-tarifa" required
+                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                        <option value="">Seleccione una tarifa...</option>
+                                        @foreach($tarifas as $tarifa)
+                                            {{-- Muestra las activas o la que ya tiene asignada el usuario aunque esté dada de baja --}}
+                                            @if($tarifa->estatus || $usuario->tarifa_id == $tarifa->id)
+                                                <option value="{{ $tarifa->id }}" {{ old('tarifa_id', $usuario->tarifa_id) == $tarifa->id ? 'selected' : '' }}>
+                                                    {{ $tarifa->nombre }} (${{ number_format($tarifa->monto_mensual, 2) }})
+                                                </option>
+                                            @endif
+                                        @endforeach
+                                    </select>
+                                    
+                                    <!-- Botón para abrir el modal en forma de tabla -->
+                                    <button type="button" onclick="abrirModalTarifa()" 
+                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md text-xs font-semibold shadow shrink-0 cursor-pointer">
+                                        + Nueva / Gestionar
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="estado_servicio" class="block text-xs font-medium text-gray-700">Estado del Servicio</label>
+                                <select name="estado_servicio" id="estado_servicio" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                                    <option value="activo" {{ $usuario->estado_servicio == 'activo' ? 'selected' : '' }}>Activo</option>
+                                    <option value="suspendido" {{ $usuario->estado_servicio == 'suspendido' ? 'selected' : '' }}>Suspendido</option>
+                                    <option value="cortado" {{ $usuario->estado_servicio == 'cortado' ? 'selected' : '' }}>Cortado</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Fila 3: Nombre del Titular y Teléfono (Opcional) -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                            <div>
+                                <label for="nombre_completo" class="block text-xs font-medium text-gray-700">Nombre del Titular</label>
+                                <input type="text" name="nombre_completo" id="nombre_completo" value="{{ old('nombre_completo', $usuario->nombre_completo) }}" required
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            </div>
+
+                            <div>
+                                <label for="telefono" class="block text-xs font-medium text-gray-700">Teléfono de Contacto <span class="text-gray-400 font-normal">(Opcional)</span></label>
+                                <input type="text" name="telefono" id="telefono" value="{{ old('telefono', $usuario->telefono) }}"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+                            </div>
+                        </div>
+
+                        <!-- Fila 4: Dirección del Predio (Opcional) -->
+                        <div class="mb-3">
+                            <label for="direccion" class="block text-xs font-medium text-gray-700">Dirección del Predio <span class="text-gray-400 font-normal">(Opcional)</span></label>
+                            <input type="text" name="direccion" id="direccion" value="{{ old('direccion', $usuario->direccion) }}"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                                placeholder="Calle, Número, Colonia...">
+                        </div>
+
+                        <!-- Fila 5: Mapa interactivo compacto (260px) -->
+                        <div class="mb-3">
+                            <label class="block text-xs font-medium text-gray-700 mb-1">Actualizar Ubicación (Haz clic en el mapa o arrastra el marcador para reubicar la toma)</label>
+                            <div id="map-picker" style="height: 260px;" class="rounded-lg border border-gray-300 z-0"></div>
+                        </div>
+
+                        <!-- Fila 6: Latitud y Longitud compactas -->
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div>
+                                <label for="latitud" class="block text-xs font-medium text-gray-700">Latitud</label>
+                                <input type="text" name="latitud" id="latitud" value="{{ old('latitud', $usuario->latitud) }}" required readonly
+                                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm">
+                            </div>
+
+                            <div>
+                                <label for="longitud" class="block text-xs font-medium text-gray-700">Longitud</label>
+                                <input type="text" name="longitud" id="longitud" value="{{ old('longitud', $usuario->longitud) }}" required readonly
+                                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm sm:text-sm">
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="flex items-center justify-end mt-3">
+                            <a href="{{ route('usuarios.index') }}" class="text-gray-600 hover:text-gray-900 mr-4 text-sm font-semibold">Cancelar</a>
+                            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold shadow">
+                                Actualizar Toma
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE GESTIÓN DE TARIFAS (VERSIÓN SIMPLE CON SCROLL) -->
+    <div id="modal-tarifa" onclick="if(event.target === this) cerrarModalTarifa()" class="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-60 flex items-center justify-center p-4" style="display: none;">
+        <div class="bg-white rounded-lg shadow-xl sm:max-w-xl sm:w-full p-5">
+            
+            <div class="flex justify-between items-center pb-3 border-b mb-3">
+                <h3 class="text-base font-bold text-gray-800">Gestión de Tarifas</h3>
+                <button type="button" onclick="cerrarModalTarifa()" class="text-gray-400 hover:text-gray-700 font-bold text-xl leading-none cursor-pointer">&times;</button>
+            </div>
+
+            <!-- Formulario integrado en una sola línea compacta -->
+            <form id="form-tarifa-ajax" class="flex gap-2 items-end mb-4">
+                @csrf
+                <div class="flex-1">
+                    <label class="block text-xs text-gray-500 mb-1">Nombre</label>
+                    <input type="text" id="nueva-nombre" class="w-full rounded-md border-gray-300 shadow-sm sm:text-sm py-1.5" placeholder="Ej. Especial" required>
+                </div>
+                <div class="w-32">
+                    <label class="block text-xs text-gray-500 mb-1">Monto ($)</label>
+                    <input type="number" step="0.01" id="nuevo-monto" class="w-full rounded-md border-gray-300 shadow-sm sm:text-sm py-1.5" placeholder="0.00" required>
+                </div>
+                <div>
+                    <button type="button" onclick="guardarTarifaAjax()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-xs font-semibold shadow cursor-pointer">
+                        + Agregar
+                    </button>
+                </div>
+            </form>
+
+            <!-- Tabla con tamaño máximo y scroll vertical habilitado -->
+            <div class="max-h-52 overflow-y-auto border rounded-md">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50 sticky top-0">
+                        <tr>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Monto</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase">Estatus</th>
+                            <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-tarifas-cuerpo" class="bg-white divide-y divide-gray-200">
+                        <!-- Dinámico vía JS -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-end mt-4 pt-2 border-t">
+                <button type="button" onclick="cerrarModalTarifa()" class="bg-gray-700 hover:bg-gray-800 text-white px-4 py-1.5 rounded-md text-xs font-semibold cursor-pointer">
+                    Listo / Actualizar
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Cargar JS de Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var currentLat = parseFloat(document.getElementById('latitud').value) || 25.3263827;
+            var currentLng = parseFloat(document.getElementById('longitud').value) || -103.295072;
+
+            var map = L.map('map-picker').setView([currentLat, currentLng], 17);
+
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 19,
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            }).addTo(map);
+
+            var marker = L.marker([currentLat, currentLng], {draggable: true}).addTo(map);
+
+            function updateInputs(lat, lng) {
+                document.getElementById('latitud').value = lat.toFixed(7);
+                document.getElementById('longitud').value = lng.toFixed(7);
+            }
+
+            map.on('click', function(e) {
+                var lat = e.latlng.lat;
+                var lng = e.latlng.lng;
+                
+                marker.setLatLng([lat, lng]);
+                updateInputs(lat, lng);
+            });
+
+            marker.on('dragend', function(e) {
+                var position = marker.getLatLng();
+                updateInputs(position.lat, position.lng);
+            });
+        });
+
+        // Funciones para el Modal y AJAX de Tarifas
+        function abrirModalTarifa() {
+            document.getElementById('modal-tarifa').style.display = 'flex';
+            cargarTarifasTabla();
+        }
+
+        function cerrarModalTarifa() {
+            document.getElementById('modal-tarifa').style.display = 'none';
+            document.getElementById('form-tarifa-ajax').reset();
+            actualizarSelectPrincipal();
+        }
+
+        function cargarTarifasTabla() {
+            fetch("{{ route('tarifas.json') }}", {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const tbody = document.getElementById('tabla-tarifas-cuerpo');
+                tbody.innerHTML = '';
+
+                data.forEach(tarifa => {
+                    const esActivo = Boolean(tarifa.estatus);
+                    
+                    const badge = esActivo 
+                        ? '<span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-green-100 text-green-800">Activa</span>' 
+                        : '<span class="px-2 py-0.5 text-xs font-semibold rounded-full bg-red-100 text-red-800">Baja</span>';
+                    
+                    const btnText = esActivo ? 'Dar de baja' : 'Activar';
+                    const btnClass = esActivo 
+                        ? 'bg-red-50 text-red-600 hover:bg-red-100' 
+                        : 'bg-green-50 text-green-600 hover:bg-green-100';
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-3 py-2 font-medium text-gray-900">${tarifa.nombre}</td>
+                        <td class="px-3 py-2 text-gray-600">$${parseFloat(tarifa.monto_mensual).toFixed(2)}</td>
+                        <td class="px-3 py-2 text-center">${badge}</td>
+                        <td class="px-3 py-2 text-right">
+                            <button type="button" onclick="toggleStatusTarifa(${tarifa.id})" class="px-2.5 py-1 rounded text-xs font-semibold ${btnClass} transition cursor-pointer">
+                                ${btnText}
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            });
+        }
+
+        function guardarTarifaAjax() {
+            const nombre = document.getElementById('nueva-nombre').value;
+            const monto = document.getElementById('nuevo-monto').value;
+            const token = document.querySelector('input[name="_token"]').value;
+
+            if (!nombre || !monto) {
+                alert('Por favor complete los campos obligatorios de la tarifa.');
+                return;
+            }
+
+            fetch("{{ route('tarifas.store.ajax') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    nombre: nombre,
+                    monto_mensual: monto
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('form-tarifa-ajax').reset();
+                    cargarTarifasTabla();
+                } else {
+                    alert('Error al guardar la tarifa.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ocurrió un error inesperado al procesar la solicitud.');
+            });
+        }
+
+        function toggleStatusTarifa(id) {
+            const token = document.querySelector('input[name="_token"]').value;
+
+            fetch(`/tarifas/${id}/toggle-status`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token,
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    cargarTarifasTabla();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        function actualizarSelectPrincipal() {
+            fetch("{{ route('tarifas.json') }}", {
+                headers: { 'Accept': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                const select = document.getElementById('select-tarifa');
+                if (!select) return;
+
+                const valorActual = select.value;
+                select.innerHTML = '<option value="">Seleccione una tarifa...</option>';
+
+                data.forEach(tarifa => {
+                    // Muestra las activas o la que ya tuviera seleccionada el usuario
+                    if (Boolean(tarifa.estatus) || tarifa.id == valorActual) {
+                        const option = document.createElement('option');
+                        option.value = tarifa.id;
+                        option.text = `${tarifa.nombre} ($${parseFloat(tarifa.monto_mensual).toFixed(2)})`;
+                        if (tarifa.id == valorActual) option.selected = true;
+                        select.appendChild(option);
+                    }
+                });
+            });
+        }
+    </script>
+</x-app-layout>
