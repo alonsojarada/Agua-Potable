@@ -58,7 +58,7 @@
                     </div>
                 </div>
 
-                <!-- LISTADO DE REDES Y USUARIOS (Tipografía responsiva de 11px a 12px) -->
+                <!-- LISTADO DE REDES Y USUARIOS -->
                 <div
                     class="overflow-y-auto flex-1 space-y-1.5 pr-1 border border-gray-100 rounded-md p-1 bg-slate-50/40">
                     @foreach($redes as $red)
@@ -131,7 +131,7 @@
                                 </div>
                             </div>
 
-                            <!-- Lista Desplegable de Tomas Individuales con Scroll Interno -->
+                            <!-- Lista Desplegable de Tomas Individuales -->
                             @if($red->usuarios->count() > 0)
                                 <div id="lista-tomas-{{ $red->id }}"
                                     class="hidden bg-slate-50 border-t border-gray-200 p-1.5 space-y-1 max-h-40 overflow-y-auto">
@@ -282,12 +282,75 @@
                 defaultLng = parseFloat(usuarios[0].longitud);
             }
 
-            var map = L.map('map-general').setView([defaultLat, defaultLng], 15);
-
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            // 1. Definir las capas base (Esri Satelital y Google Maps)
+            var capaEsri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
                 maxZoom: 19,
                 attribution: 'Tiles &copy; Esri'
-            }).addTo(map);
+            });
+
+            var capaGoogleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '&copy; Google Maps'
+            });
+
+            var capaGoogleRoad = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                maxZoom: 20,
+                subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+                attribution: '&copy; Google Maps'
+            });
+
+            // Inicializar el mapa con Esri por defecto
+            var map = L.map('map-general', {
+                layers: [capaEsri]
+            }).setView([defaultLat, defaultLng], 15);
+
+            // 2. Crear control personalizado de botones flotantes en la esquina superior derecha
+            var SelectorCapas = L.Control.extend({
+                options: { position: 'topright' },
+
+                onAdd: function (map) {
+                    var contenedor = L.DomUtil.create('div', 'leaflet-bar leaflet-control bg-white shadow-md rounded-md p-1 flex gap-1 text-xs font-semibold z-[999]');
+                    
+                    contenedor.innerHTML = `
+                        <button type="button" id="btn-esri" class="px-2.5 py-1 rounded bg-blue-600 text-white cursor-pointer transition">Esri / Sat</button>
+                        <button type="button" id="btn-google-sat" class="px-2.5 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer transition">Google Sat</button>
+                        <button type="button" id="btn-google-road" class="px-2.5 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer transition">Google Calles</button>
+                    `;
+
+                    L.DomEvent.disableClickPropagation(contenedor);
+                    return contenedor;
+                }
+            });
+
+            map.addControl(new SelectorCapas());
+
+            // 3. Eventos para alternar entre los mapas mediante los botones
+            document.getElementById('btn-esri').addEventListener('click', function () {
+                map.eachLayer(layer => { if (layer instanceof L.TileLayer) map.removeLayer(layer); });
+                capaEsri.addTo(map);
+                actualizarEstilosBotones(this);
+            });
+
+            document.getElementById('btn-google-sat').addEventListener('click', function () {
+                map.eachLayer(layer => { if (layer instanceof L.TileLayer) map.removeLayer(layer); });
+                capaGoogleSat.addTo(map);
+                actualizarEstilosBotones(this);
+            });
+
+            document.getElementById('btn-google-road').addEventListener('click', function () {
+                map.eachLayer(layer => { if (layer instanceof L.TileLayer) map.removeLayer(layer); });
+                capaGoogleRoad.addTo(map);
+                actualizarEstilosBotones(this);
+            });
+
+            function actualizarEstilosBotones(btnActivo) {
+                ['btn-esri', 'btn-google-sat', 'btn-google-road'].forEach(id => {
+                    let b = document.getElementById(id);
+                    if (b) b.className = "px-2.5 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer transition";
+                });
+                if (btnActivo) btnActivo.className = "px-2.5 py-1 rounded bg-blue-600 text-white cursor-pointer transition shadow-xs";
+            }
 
             setTimeout(() => { map.invalidateSize(); }, 250);
 

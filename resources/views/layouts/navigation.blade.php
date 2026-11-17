@@ -26,6 +26,11 @@
             <span>Caja Individual</span>
         </a>
 
+        <a href="{{ route('recibos.escanear') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-md font-semibold {{ request()->routeIs('recibos.escanear') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition">
+            <span class="text-base">📷</span>
+            <span>Escanear QR</span>
+        </a>
+
         <a href="{{ route('redes.index') ?? '#' }}" class="flex items-center gap-3 px-3 py-2.5 rounded-md font-semibold {{ request()->routeIs('redes.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition">
             <span class="text-base">📡</span>
             <span>Redes</span>

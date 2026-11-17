@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Usuario;
 use App\Models\Pago;
+use App\Models\Recibo;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class PagoController extends Controller
 {
@@ -56,39 +58,63 @@ class PagoController extends Controller
             'monto' => 'required|numeric|min:0',
         ]);
 
-        // 1. Buscar si ya existe un registro para este mes y año en este usuario
-        $pagoExistente = Pago::where('usuario_id', $request->usuario_id)
-            ->where('periodo_mes', $request->periodo_mes)
-            ->where('periodo_anio', $request->periodo_anio)
-            ->first();
+        $periodoCompleto = $request->periodo_mes . ' ' . $request->periodo_anio;
 
-        if ($pagoExistente) {
-            // Si ya fue pagado, bloqueamos para evitar duplicados
-            if ($pagoExistente->estatus === 'pagado') {
-                return back()->withErrors(['error' => 'El periodo ' . $request->periodo_mes . ' ' . $request->periodo_anio . ' ya se encuentra pagado para este usuario.']);
+        // Usamos una transacción para que el pago y su recibo queden guardados de forma segura
+        return DB::transaction(function () use ($request, $periodoCompleto) {
+
+            // 1. Buscar si ya existe un registro para este mes y año en este usuario
+            $pagoExistente = Pago::where('usuario_id', $request->usuario_id)
+                ->where('periodo_mes', $request->periodo_mes)
+                ->where('periodo_anio', $request->periodo_anio)
+                ->first();
+
+            if ($pagoExistente) {
+                // Si ya fue pagado, bloqueamos para evitar duplicados
+                if ($pagoExistente->estatus === 'pagado') {
+                    return back()->withErrors(['error' => 'El periodo ' . $periodoCompleto . ' ya se encuentra pagado para este usuario.']);
+                }
+
+                // Si estaba como 'pendiente', lo actualizamos a 'pagado'
+                $pagoExistente->update([
+                    'monto' => $request->monto,
+                    'fecha_pago' => Carbon::now(),
+                    'estatus' => 'pagado',
+                ]);
+
+                // Generar o actualizar su recibo correspondiente como pagado
+                Recibo::create([
+                    'usuario_id' => $request->usuario_id,
+                    'monto' => $request->monto,
+                    'mes_anio' => $periodoCompleto,
+                    'estatus' => 'pagado',
+                    'fecha_pago' => Carbon::now(),
+                ]);
+
+                return back()->with('success', '¡El periodo pendiente ' . $periodoCompleto . ' ha sido cobrado, liquidado y su recibo generado con éxito!');
             }
 
-            // Si estaba como 'pendiente' (generado por el sistema), simplemente lo liquidamos/actualizamos
-            $pagoExistente->update([
+            // 2. Si no existe (es un pago adelantado manual), lo creamos directamente como 'pagado'
+            $pago = Pago::create([
+                'usuario_id' => $request->usuario_id,
+                'periodo_mes' => $request->periodo_mes,
+                'periodo_anio' => $request->periodo_anio,
                 'monto' => $request->monto,
                 'fecha_pago' => Carbon::now(),
                 'estatus' => 'pagado',
             ]);
 
-            return back()->with('success', '¡El periodo pendiente ' . $request->periodo_mes . ' ' . $request->periodo_anio . ' ha sido cobrado y liquidado con éxito!');
-        }
+            // Generar el recibo correspondiente para este pago adelantado
+            Recibo::create([
+                'usuario_id' => $request->usuario_id,
+                'monto' => $request->monto,
+                'mes_anio' => $periodoCompleto,
+                'estatus' => 'pagado',
+                'fecha_pago' => Carbon::now(),
+            ]);
 
-        // 2. Si no existe (es un pago adelantado manual), lo creamos directamente como 'pagado'
-        Pago::create([
-            'usuario_id' => $request->usuario_id,
-            'periodo_mes' => $request->periodo_mes,
-            'periodo_anio' => $request->periodo_anio,
-            'monto' => $request->monto,
-            'fecha_pago' => Carbon::now(),
-            'estatus' => 'pagado',
-        ]);
-
-        return back()->with('success', '¡Pago adelantado registrado y cobrado con éxito!');
+            return back()->with('success', '¡Pago adelantado registrado, cobrado y recibo con QR generado con éxito!');
+        });
     }
 
     public function matriz(Request $request)
@@ -112,7 +138,13 @@ class PagoController extends Controller
 
     public function anular($id)
     {
-        $pago = \App\Models\Pago::findOrFail($id);
+        $pago = Pago::findOrFail($id);
+
+        // Buscar el recibo vinculado a este usuario y periodo exacto
+        $periodoCompleto = $pago->periodo_mes . ' ' . $pago->periodo_anio;
+        $recibo = Recibo::where('usuario_id', $pago->usuario_id)
+            ->where('mes_anio', $periodoCompleto)
+            ->first();
 
         // Mapeo de meses a números para comparar fechas
         $mesesNumero = [
@@ -140,15 +172,23 @@ class PagoController extends Controller
         $esAdelantado = ($anioPago > $anioActual) || ($anioPago == $anioActual && $mesPagoNum > $mesActualNum);
 
         if ($esAdelantado) {
-            // Si es adelantado, eliminamos el registro por completo para que no cuente como adeudo pendiente
+            // Si es adelantado, eliminamos el registro del pago y su recibo por completo
+            if ($recibo) {
+                $recibo->delete();
+            }
             $pago->delete();
-            return back()->with('success', 'El recibo del mes adelantado ha sido eliminado correctamente.');
+            return back()->with('success', 'El recibo y el pago adelantado han sido eliminados correctamente.');
         } else {
-            // Si es mes actual o pasado, se anula pero regresa a estatus pendiente
+            // Si es mes actual o pasado, ambos se anulan y regresan a estatus pendiente
+            if ($recibo) {
+                $recibo->estatus = 'pendiente';
+                $recibo->fecha_pago = null;
+                $recibo->save();
+            }
             $pago->estatus = 'pendiente';
             $pago->fecha_pago = null;
             $pago->save();
-            return back()->with('success', 'El pago ha sido anulado y el periodo ahora está pendiente.');
+            return back()->with('success', 'El pago y su recibo han sido anulados; el periodo ahora está pendiente.');
         }
     }
 

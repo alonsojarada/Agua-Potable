@@ -81,12 +81,18 @@
             margin-top: 10px;
         }
         .footer {
-            margin-top: 50px;
-            text-align: center;
-            font-size: 12px;
-            color: #6b7280;
+            margin-top: 30px;
             border-top: 1px solid #e5e7eb;
             padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-text {
+            font-size: 12px;
+            color: #6b7280;
+            flex: 1;
+            padding-right: 20px;
         }
         @media print {
             body { background: none; padding: 0; }
@@ -164,10 +170,30 @@
             Total Pagado: ${{ number_format($pago->monto, 2) }} MXN
         </div>
 
-        <!-- Pie de página -->
+        <!-- Pie de página con Código QR de Seguridad -->
         <div class="footer">
-            Este comprobante es una representación digital de un pago registrado en el sistema.<br>
-            ¡Gracias por su puntualidad en sus pagos!
+            <div class="footer-text">
+                Este comprobante es una representación digital de un pago registrado en el sistema.<br>
+                ¡Gracias por su puntualidad en sus pagos! Conserve este documento para cualquier aclaración.
+            </div>
+
+            @php
+                $periodoCompleto = $pago->periodo_mes . ' ' . $pago->periodo_anio;
+                $recibo = \App\Models\Recibo::where('usuario_id', $pago->usuario_id)
+                    ->where('mes_anio', $periodoCompleto)
+                    ->first();
+            @endphp
+
+            @if($recibo)
+                <div style="text-align: center;">
+                    @php
+                        $urlVerificacion = route('recibos.verificar', ['token' => $recibo->token_seguridad]);
+                    @endphp
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=110x110&data={{ urlencode($urlVerificacion) }}" 
+                         alt="QR de Validación" style="width: 90px; height: 90px; background: #fff; padding: 2px; border: 1px solid #ccc;">
+                    <div style="font-size: 9px; color: #555; margin-top: 2px; font-family: monospace; font-weight: bold;">{{ $recibo->folio_recibo }}</div>
+                </div>
+            @endif
         </div>
 
     </div>

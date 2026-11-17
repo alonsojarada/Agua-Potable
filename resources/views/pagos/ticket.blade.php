@@ -73,6 +73,28 @@
 
         <div class="line"></div>
 
+       <!-- CÓDIGO QR DE SEGURIDAD -->
+        @php
+            // Buscamos el recibo vinculado a este pago
+            $periodoCompleto = $pago->periodo_mes . ' ' . $pago->periodo_anio;
+            $recibo = \App\Models\Recibo::where('usuario_id', $pago->usuario_id)
+                ->where('mes_anio', $periodoCompleto)
+                ->first();
+        @endphp
+
+        @if($recibo)
+            <div class="center" style="margin: 10px 0;">
+                @php
+                    // Usamos el token_seguridad del recibo para el QR
+                    $urlVerificacion = route('recibos.verificar', ['token' => $recibo->token_seguridad]);
+                @endphp
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=120x120&data={{ urlencode($urlVerificacion) }}" 
+                     alt="QR de Validación" style="width: 100px; height: 100px; background: #fff; padding: 2px; border: 1px solid #ccc;">
+                <div style="font-size: 8px; color: #555; margin-top: 2px; font-family: monospace;">{{ $recibo->folio_recibo }}</div>
+            </div>
+            <div class="line"></div>
+        @endif
+
         <div class="center" style="font-size: 10px; margin-top: 10px;">
             ¡Gracias por su pago! <br>
             Conserve este ticket para cualquier aclaración.

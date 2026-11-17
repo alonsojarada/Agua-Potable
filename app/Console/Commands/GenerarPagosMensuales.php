@@ -5,12 +5,13 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Usuario;
 use App\Models\Pago;
+use App\Models\Recibo; 
 use Carbon\Carbon;
 
 class GenerarPagosMensuales extends Command
 {
     protected $signature = 'pagos:generar-mensuales';
-    protected $description = 'Genera automáticamente el pago pendiente del mes en curso para todos los usuarios activos, respetando pagos existentes o adelantados.';
+    protected $description = 'Genera automáticamente el pago pendiente del mes en curso y su recibo con QR seguro para todos los usuarios activos.';
 
     public function handle()
     {
@@ -25,6 +26,7 @@ class GenerarPagosMensuales extends Command
 
         // Nombre del mes actual exacto (ej. Noviembre)
         $nombreMesActual = $mesesAnio[$mesActualNum];
+        $periodoCompleto = $nombreMesActual . ' ' . $anioActual;
 
         // Obtenemos solo usuarios activos (excluyendo bajas)
         $usuarios = Usuario::where('estado_servicio', '!=', 'baja')->with('tarifa')->get();
@@ -38,19 +40,31 @@ class GenerarPagosMensuales extends Command
                 ->where('periodo_anio', $anioActual)
                 ->exists();
 
-            // Si no existe, lo creamos como pendiente
+            // Si no existe, creamos el pago y su recibo correspondiente
             if (!$existe) {
-                Pago::create([
+                $monto = $usuario->tarifa->monto_mensual ?? 0;
+
+                // 1. Crear el pago pendiente
+                $pago = Pago::create([
                     'usuario_id' => $usuario->id,
                     'periodo_mes' => $nombreMesActual,
                     'periodo_anio' => $anioActual,
-                    'monto' => $usuario->tarifa->monto_mensual ?? 0,
+                    'monto' => $monto,
                     'estatus' => 'pendiente',
                 ]);
+
+                // 2. Crear automáticamente el Recibo vinculado (El folio y el token_seguridad se generan solos gracias al modelo Recibo)
+                Recibo::create([
+                    'usuario_id' => $usuario->id,
+                    'monto' => $monto,
+                    'mes_anio' => $periodoCompleto,
+                    'estatus' => 'pendiente',
+                ]);
+
                 $creados++;
             }
         }
 
-        $this->info("¡Proceso exitoso! Se generó el pago pendiente de {$nombreMesActual} {$anioActual} para {$creados} usuarios activos.");
+        $this->info("¡Proceso exitoso! Se generó el pago pendiente y su recibo con QR para {$creados} usuarios activos en el período {$periodoCompleto}.");
     }
 }

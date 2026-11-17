@@ -7,6 +7,7 @@ use App\Http\Controllers\MapController;
 use App\Http\Controllers\HorarioSuministroController;
 use App\Http\Controllers\TarifaController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\ReciboController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -42,6 +43,12 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/pagos/{pago}/ticket', [PagoController::class, 'ticket'])->name('pagos.ticket');
     Route::get('/pagos/{pago}/comprobante', [PagoController::class, 'comprobante'])->name('pagos.comprobante');
+
+    Route::get('/caja/escanear', [ReciboController::class, 'vistaEscanear'])->name('recibos.escanear');
+    Route::get('/recibos/verificar-json/{token}', [ReciboController::class, 'verificarPorQrJson'])->name('recibos.verificar.json');
+    Route::post('/recibos/cobrar-qr/{id}', [ReciboController::class, 'procesarCobroQr'])->name('recibos.cobrar.qr');
+
+    Route::get('/recibos/verificar/{token}', [ReciboController::class, 'verificarPorQr'])->name('recibos.verificar');
 
 });
 

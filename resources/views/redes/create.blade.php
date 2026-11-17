@@ -101,20 +101,81 @@
 
     <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Inicializar el mapa centrado en tus coordenadas base
-        var map = L.map('map-tramos').setView([25.3263827, -103.295072], 16);
-
-        // Cambiar la capa base por IMÁGENES SATELITALES (Esri World Imagery)
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        // 1. Definir las capas base disponibles
+        var capaEsri = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             maxZoom: 19,
             attribution: 'Tiles &copy; Esri'
-        }).addTo(map);
+        });
 
-        // Capa para almacenar las figuras dibujadas
+        var capaGoogleSat = L.tileLayer('https://{s}.google.com/vt/lyrs=s,h&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '&copy; Google Maps'
+        });
+
+        var capaGoogleRoad = L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            maxZoom: 20,
+            subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+            attribution: '&copy; Google Maps'
+        });
+
+        // 2. Inicializar el mapa centrado (usando Esri por defecto)
+        var map = L.map('map-tramos', {
+            layers: [capaEsri]
+        }).setView([25.3263827, -103.295072], 16);
+
+        // 3. Crear control personalizado de botones flotantes para cambiar de mapa
+        var SelectorCapas = L.Control.extend({
+            options: { position: 'topright' },
+
+            onAdd: function (map) {
+                var contenedor = L.DomUtil.create('div', 'leaflet-bar leaflet-control bg-white shadow-md rounded-md p-1 flex gap-1 text-xs font-semibold z-[999]');
+                
+                contenedor.innerHTML = `
+                    <button type="button" id="btn-esri" class="px-2.5 py-1 rounded bg-blue-600 text-white cursor-pointer transition">Esri / Sat</button>
+                    <button type="button" id="btn-google-sat" class="px-2.5 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer transition">Google Sat</button>
+                    <button type="button" id="btn-google-road" class="px-2.5 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer transition">Google Calles</button>
+                `;
+
+                L.DomEvent.disableClickPropagation(contenedor);
+                return contenedor;
+            }
+        });
+
+        map.addControl(new SelectorCapas());
+
+        // 4. Lógica de eventos para alternar las capas del mapa
+        document.getElementById('btn-esri').addEventListener('click', function () {
+            map.eachLayer(layer => { if (layer instanceof L.TileLayer) map.removeLayer(layer); });
+            capaEsri.addTo(map);
+            actualizarEstilosBotones(this);
+        });
+
+        document.getElementById('btn-google-sat').addEventListener('click', function () {
+            map.eachLayer(layer => { if (layer instanceof L.TileLayer) map.removeLayer(layer); });
+            capaGoogleSat.addTo(map);
+            actualizarEstilosBotones(this);
+        });
+
+        document.getElementById('btn-google-road').addEventListener('click', function () {
+            map.eachLayer(layer => { if (layer instanceof L.TileLayer) map.removeLayer(layer); });
+            capaGoogleRoad.addTo(map);
+            actualizarEstilosBotones(this);
+        });
+
+        function actualizarEstilosBotones(btnActivo) {
+            ['btn-esri', 'btn-google-sat', 'btn-google-road'].forEach(id => {
+                let b = document.getElementById(id);
+                if (b) b.className = "px-2.5 py-1 rounded bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer transition";
+            });
+            if (btnActivo) btnActivo.className = "px-2.5 py-1 rounded bg-blue-600 text-white cursor-pointer transition shadow-xs";
+        }
+
+        // Capa para almacenar las figuras dibujadas (Tuberías)
         var drawnItems = new L.FeatureGroup();
         map.addLayer(drawnItems);
 
-        // Configurar los controles de dibujo (solo permitiremos Polylines / Líneas de tubería)
+        // Configurar los controles de dibujo (Polylines / Líneas de tubería)
         var drawControl = new L.Control.Draw({
             position: 'topright',
             draw: {
