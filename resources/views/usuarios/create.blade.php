@@ -12,8 +12,8 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
     <!-- CONTENEDOR ADAPTATIVO -->
-    <div class="py-2 px-2 sm:px-3 w-full">
-        <div class="bg-transparent overflow-hidden rounded-lg p-0 w-full h-auto lg:h-[calc(100vh-125px)] flex flex-col">
+    <div class="py-1.5 sm:py-2 px-2 sm:px-3 w-full">
+        <div class="bg-transparent rounded-lg p-0 w-full h-auto lg:h-[calc(100vh-125px)] flex flex-col">
 
             @if ($errors->any())
                 <div class="mb-2 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded text-xs shrink-0">
@@ -29,18 +29,18 @@
                 @csrf
 
                 <!-- DISEÑO RESPONSIVO: Dos columnas simétricas -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 h-auto lg:h-full min-h-0">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-2 sm:gap-3 h-auto lg:h-full min-h-0">
                     
                     <!-- ================= COLUMNA IZQUIERDA: FORMULARIO ================= -->
-                    <div class="lg:col-span-5 xl:col-span-4 bg-gray-50 border border-gray-200 rounded-lg p-3.5 shadow-2xs flex flex-col h-auto lg:h-full overflow-y-auto">
-                        <div class="space-y-3 flex-1">
-                            <h3 class="font-bold text-gray-800 text-xs sm:text-sm mb-1 uppercase">Datos de la Toma</h3>
+                    <div class="lg:col-span-5 xl:col-span-4 bg-gray-50 border border-gray-200 rounded-lg p-2.5 sm:p-3.5 shadow-2xs flex flex-col h-auto lg:h-full lg:overflow-y-auto">
+                        <div class="space-y-1.5 sm:space-y-3 flex-1">
+                            <h3 class="font-bold text-gray-800 text-[11px] sm:text-sm mb-0.5 sm:mb-1 uppercase">Datos de la Toma</h3>
 
                             <!-- Red o Circuito -->
                             <div>
-                                <label for="red_id" class="block text-xs font-medium text-gray-700 mb-1">Red o Circuito Asignado</label>
+                                <label for="red_id" class="block text-[11px] sm:text-xs font-medium text-gray-700 mb-0.5 sm:mb-1">Red o Circuito Asignado</label>
                                 <select name="red_id" id="red_id" required
-                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500">
+                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-1 sm:py-2 px-2.5 sm:px-3 focus:border-blue-500 focus:ring-blue-500">
                                     <option value="">Seleccione una red...</option>
                                     @foreach($redes as $red)
                                         <option value="{{ $red->id }}" {{ old('red_id') == $red->id ? 'selected' : '' }}>
@@ -52,10 +52,10 @@
 
                             <!-- Tarifa Mensual con Botón -->
                             <div>
-                                <label for="tarifa_id" class="block text-xs font-medium text-gray-700 mb-1">Tarifa Mensual Asignada</label>
-                                <div class="flex items-center gap-2">
+                                <label for="tarifa_id" class="block text-[11px] sm:text-xs font-medium text-gray-700 mb-0.5 sm:mb-1">Tarifa Mensual Asignada</label>
+                                <div class="flex items-center gap-1.5 sm:gap-2">
                                     <select name="tarifa_id" id="select-tarifa" required
-                                        class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500">
+                                        class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-1 sm:py-2 px-2.5 sm:px-3 focus:border-blue-500 focus:ring-blue-500">
                                         <option value="">Seleccione una tarifa...</option>
                                         @foreach($tarifas as $tarifa)
                                             @if($tarifa->estatus)
@@ -66,7 +66,7 @@
                                         @endforeach
                                     </select>
                                     <button type="button" onclick="abrirModalTarifa()"
-                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-md text-xs font-semibold shadow-2xs shrink-0 cursor-pointer">
+                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-2.5 sm:px-3 py-1 sm:py-2 rounded-md text-xs font-semibold shadow-2xs shrink-0 cursor-pointer">
                                         + Nueva
                                     </button>
                                 </div>
@@ -74,31 +74,31 @@
 
                             <!-- Nombre del Titular -->
                             <div>
-                                <label for="nombre_completo" class="block text-xs font-medium text-gray-700 mb-1">Nombre del Titular</label>
+                                <label for="nombre_completo" class="block text-[11px] sm:text-xs font-medium text-gray-700 mb-0.5 sm:mb-1">Nombre del Titular</label>
                                 <input type="text" name="nombre_completo" id="nombre_completo" value="{{ old('nombre_completo') }}" required
-                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500">
+                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-1 sm:py-2 px-2.5 sm:px-3 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
                             <!-- Teléfono -->
                             <div>
-                                <label for="telefono" class="block text-xs font-medium text-gray-700 mb-1">Teléfono <span class="text-gray-400 font-normal">(Opcional)</span></label>
+                                <label for="telefono" class="block text-[11px] sm:text-xs font-medium text-gray-700 mb-0.5 sm:mb-1">Teléfono <span class="text-gray-400 font-normal">(Opcional)</span></label>
                                 <input type="text" name="telefono" id="telefono" value="{{ old('telefono') }}"
-                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500">
+                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-1 sm:py-2 px-2.5 sm:px-3 focus:border-blue-500 focus:ring-blue-500">
                             </div>
 
                             <!-- Dirección -->
                             <div>
-                                <label for="direccion" class="block text-xs font-medium text-gray-700 mb-1">Dirección del Predio <span class="text-gray-400 font-normal">(Opcional)</span></label>
+                                <label for="direccion" class="block text-[11px] sm:text-xs font-medium text-gray-700 mb-0.5 sm:mb-1">Dirección del Predio <span class="text-gray-400 font-normal">(Opcional)</span></label>
                                 <input type="text" name="direccion" id="direccion" value="{{ old('direccion') }}"
-                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500"
+                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-1 sm:py-2 px-2.5 sm:px-3 focus:border-blue-500 focus:ring-blue-500"
                                     placeholder="Calle, Número, Colonia...">
                             </div>
 
                             <!-- Estado del Servicio -->
                             <div>
-                                <label for="estado_servicio" class="block text-xs font-medium text-gray-700 mb-1">Estado del Servicio</label>
+                                <label for="estado_servicio" class="block text-[11px] sm:text-xs font-medium text-gray-700 mb-0.5 sm:mb-1">Estado del Servicio</label>
                                 <select name="estado_servicio" id="estado_servicio" required
-                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-2 px-3 focus:border-blue-500 focus:ring-blue-500">
+                                    class="w-full rounded-md border-gray-300 shadow-2xs text-xs sm:text-sm py-1 sm:py-2 px-2.5 sm:px-3 focus:border-blue-500 focus:ring-blue-500">
                                     <option value="activo">Activo</option>
                                     <option value="suspendido">Suspendido</option>
                                     <option value="cortado">Cortado</option>
@@ -106,39 +106,39 @@
                             </div>
 
                             <!-- Coordenadas Ocultas / Resumen -->
-                            <div class="grid grid-cols-2 gap-2 pt-1">
+                            <div class="grid grid-cols-2 gap-2 pt-0.5 sm:pt-1">
                                 <div>
                                     <label for="latitud" class="block text-[10px] font-medium text-gray-500">Latitud</label>
                                     <input type="text" name="latitud" id="latitud" value="{{ old('latitud', '25.3263827') }}" required readonly
-                                        class="w-full rounded-md border-gray-300 bg-gray-100 text-xs py-1 px-2">
+                                        class="w-full rounded-md border-gray-300 bg-gray-100 text-[11px] sm:text-xs py-0.5 sm:py-1 px-2">
                                 </div>
                                 <div>
                                     <label for="longitud" class="block text-[10px] font-medium text-gray-500">Longitud</label>
                                     <input type="text" name="longitud" id="longitud" value="{{ old('longitud', '-103.295072') }}" required readonly
-                                        class="w-full rounded-md border-gray-300 bg-gray-100 text-xs py-1 px-2">
+                                        class="w-full rounded-md border-gray-300 bg-gray-100 text-[11px] sm:text-xs py-0.5 sm:py-1 px-2">
                                 </div>
                             </div>
                         </div>
 
                         <!-- Botones de Acción -->
-                        <div class="flex items-center gap-2 pt-4 mt-4 border-t border-gray-200 shrink-0">
-                            <a href="{{ route('usuarios.index') }}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-2 px-3 rounded-md text-xs sm:text-sm font-semibold shadow-2xs transition text-center cursor-pointer">
+                        <div class="flex items-center gap-2 pt-2 mt-2 sm:pt-4 sm:mt-4 border-t border-gray-200 shrink-0">
+                            <a href="{{ route('usuarios.index') }}" class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 py-1.5 sm:py-2 px-3 rounded-md text-xs sm:text-sm font-semibold shadow-2xs transition text-center cursor-pointer">
                                 Cancelar
                             </a>
-                            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-3 rounded-md text-xs sm:text-sm font-semibold shadow-2xs transition text-center cursor-pointer">
+                            <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-1.5 sm:py-2 px-3 rounded-md text-xs sm:text-sm font-semibold shadow-2xs transition text-center cursor-pointer">
                                 Guardar
                             </button>
                         </div>
                     </div>
 
                     <!-- ================= COLUMNA DERECHA: MAPA EXPANDIDO ================= -->
-                    <div class="lg:col-span-7 xl:col-span-8 bg-white border border-gray-200 rounded-lg p-3 shadow-2xs flex flex-col h-[450px] lg:h-full">
-                        <div class="flex justify-between items-center mb-2 shrink-0">
-                            <label class="block text-[11px] sm:text-xs font-bold text-gray-700">Ubicación de la Toma (Haz clic o arrastra el marcador para ubicar el predio)</label>
+                    <div class="lg:col-span-7 xl:col-span-8 bg-white border border-gray-200 rounded-lg p-2.5 sm:p-3 shadow-2xs flex flex-col h-[340px] sm:h-[420px] lg:h-full">
+                        <div class="flex justify-between items-center mb-1.5 sm:mb-2 shrink-0">
+                            <label class="block text-[11px] sm:text-xs font-bold text-gray-700">Ubicación de la Toma (Toca o arrastra el marcador)</label>
                         </div>
                         
                         <!-- Mapa interactivo -->
-                        <div id="map-picker" class="w-full flex-1 rounded-md border border-gray-300 shadow-inner z-0"></div>
+                        <div id="map-picker" class="w-full h-[285px] sm:h-[365px] lg:h-auto lg:flex-1 rounded-md border border-gray-300 shadow-inner z-0"></div>
                     </div>
 
                 </div>
@@ -159,7 +159,7 @@
                     class="text-gray-400 hover:text-gray-700 font-bold text-xl leading-none cursor-pointer">&times;</button>
             </div>
 
-            <form id="form-tarifa-ajax" class="flex gap-2 items-end mb-4">
+            <form id="form-tarifa-ajax" class="flex flex-col sm:flex-row gap-2 sm:items-end mb-4">
                 @csrf
                 <div class="flex-1">
                     <label class="block text-xs text-gray-500 mb-1">Nombre</label>
@@ -167,7 +167,7 @@
                         class="w-full rounded-md border-gray-300 shadow-sm sm:text-sm py-1.5" placeholder="Ej. Especial"
                         required>
                 </div>
-                <div class="w-32">
+                <div class="w-full sm:w-32">
                     <label class="block text-xs text-gray-500 mb-1">Monto ($)</label>
                     <input type="number" step="0.01" id="nuevo-monto"
                         class="w-full rounded-md border-gray-300 shadow-sm sm:text-sm py-1.5" placeholder="0.00"
@@ -175,7 +175,7 @@
                 </div>
                 <div>
                     <button type="button" onclick="guardarTarifaAjax()"
-                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-xs font-semibold shadow cursor-pointer">
+                        class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-xs font-semibold shadow cursor-pointer">
                         + Agregar
                     </button>
                 </div>
@@ -241,7 +241,9 @@
                 updateInputs(position.lat, position.lng);
             });
 
-            setTimeout(() => { map.invalidateSize(); }, 250);
+            setTimeout(() => { map.invalidateSize(); }, 200);
+            setTimeout(() => { map.invalidateSize(); }, 600);
+            window.addEventListener('resize', () => { map.invalidateSize(); });
         });
 
         function abrirModalTarifa() {
