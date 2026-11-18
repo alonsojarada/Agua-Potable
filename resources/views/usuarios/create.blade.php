@@ -11,12 +11,12 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
 
-    <!-- CONTENEDOR ADAPTATIVO -->
-    <div class="py-1.5 sm:py-2 px-2 sm:px-3 w-full">
+    <!-- CONTENEDOR ADAPTATIVO CON SCROLL LIBRE EN MÓVIL -->
+    <div class="py-1.5 sm:py-2 px-2 sm:px-3 w-full overflow-x-hidden overflow-y-auto lg:overflow-visible">
         <div class="bg-transparent rounded-lg p-0 w-full h-auto lg:h-[calc(100vh-125px)] flex flex-col">
 
             @if ($errors->any())
-                <div class="mb-2 bg-red-100 border border-red-400 text-red-700 px-3 py-1 rounded text-xs shrink-0">
+                <div class="mb-2 bg-red-100 border border-red-400 text-red-700 px-3 py-1.5 rounded text-xs shrink-0">
                     <ul class="list-disc list-inside">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -132,13 +132,15 @@
                     </div>
 
                     <!-- ================= COLUMNA DERECHA: MAPA EXPANDIDO ================= -->
-                    <div class="lg:col-span-7 xl:col-span-8 bg-white border border-gray-200 rounded-lg p-2.5 sm:p-3 shadow-2xs flex flex-col h-[340px] sm:h-[420px] lg:h-full">
+                    <div class="lg:col-span-7 xl:col-span-8 bg-white border border-gray-200 rounded-lg p-2.5 sm:p-3 shadow-2xs flex flex-col h-[320px] sm:h-[380px] lg:h-full">
                         <div class="flex justify-between items-center mb-1.5 sm:mb-2 shrink-0">
                             <label class="block text-[11px] sm:text-xs font-bold text-gray-700">Ubicación de la Toma (Toca o arrastra el marcador)</label>
                         </div>
                         
                         <!-- Mapa interactivo -->
-                        <div id="map-picker" class="w-full h-[285px] sm:h-[365px] lg:h-auto lg:flex-1 rounded-md border border-gray-300 shadow-inner z-0"></div>
+                        <div class="w-full flex-1 min-h-[240px] rounded-md border border-gray-300 shadow-inner overflow-hidden relative z-0">
+                            <div id="map-picker" class="w-full h-full"></div>
+                        </div>
                     </div>
 
                 </div>
@@ -241,8 +243,13 @@
                 updateInputs(position.lat, position.lng);
             });
 
-            setTimeout(() => { map.invalidateSize(); }, 200);
-            setTimeout(() => { map.invalidateSize(); }, 600);
+            const mapEl = document.getElementById('map-picker');
+            if (window.ResizeObserver && mapEl) {
+                const ro = new ResizeObserver(() => map.invalidateSize());
+                ro.observe(mapEl);
+            }
+            setTimeout(() => { map.invalidateSize(); }, 150);
+            setTimeout(() => { map.invalidateSize(); }, 500);
             window.addEventListener('resize', () => { map.invalidateSize(); });
         });
 
