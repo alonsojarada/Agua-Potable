@@ -78,18 +78,39 @@
                         const formCobro = document.getElementById('form-cobrar-qr');
 
                         if (data.success) {
+                            // CASO 1: Recibo Válido y Pendiente de Cobro
                             contenedor.innerHTML = `
-                            <div class="space-y-1.5">
-                                <p><strong>Folio Recibo:</strong> <span class="text-blue-600 font-bold">${data.recibo.folio_recibo}</span></p>
-                                <p><strong>Titular:</strong> ${data.recibo.usuario.nombre_completo} (${data.recibo.usuario.folio})</p>
-                                <p><strong>Período:</strong> ${data.recibo.mes_anio}</p>
-                                <p class="text-base font-bold text-emerald-600 pt-1">Monto a Pagar: $${parseFloat(data.recibo.monto).toFixed(2)}</p>
-                                <p class="text-[10px] text-green-600 font-bold uppercase mt-2">✔ Recibo Válido y Pendiente de Cobro</p>
-                            </div>
-                        `;
+                    <div class="space-y-1.5">
+                        <p><strong>Folio Recibo:</strong> <span class="text-blue-600 font-bold">${data.recibo.folio_recibo}</span></p>
+                        <p><strong>Titular:</strong> ${data.recibo.usuario.nombre_completo} (${data.recibo.usuario.folio})</p>
+                        <p><strong>Período:</strong> ${data.recibo.mes_anio}</p>
+                        <p class="text-base font-bold text-emerald-600 pt-1">Monto a Pagar: $${parseFloat(data.recibo.monto).toFixed(2)}</p>
+                        <p class="text-[10px] text-green-600 font-bold uppercase mt-2">✔ Recibo Válido y Pendiente de Cobro</p>
+                    </div>
+                `;
                             formCobro.action = `/recibos/cobrar-qr/${data.recibo.id}`;
                             btnCobro.classList.remove('hidden');
+
+                        } else if (data.ya_pagado) {
+                            // CASO 2: El recibo YA FUE PAGADO (Mostramos detalles completos)
+                            let fechaFormateada = data.recibo.fecha_pago ? new Date(data.recibo.fecha_pago).toLocaleString() : 'N/D';
+
+                            contenedor.innerHTML = `
+                    <div class="space-y-1.5 bg-amber-50 border border-amber-200 p-3 rounded-md">
+                        <p class="text-amber-800 font-bold text-xs uppercase">⚠️ Este recibo ya cuenta con un pago registrado</p>
+                        <hr class="border-amber-200 my-1">
+                        <p><strong>Folio Recibo:</strong> <span class="font-mono text-gray-700">${data.recibo.folio_recibo}</span></p>
+                        <p><strong>Titular:</strong> ${data.recibo.usuario.nombre_completo} (${data.recibo.usuario.folio})</p>
+                        <p><strong>Período:</strong> ${data.recibo.mes_anio}</p>
+                        <p><strong>Monto Pagado:</strong> $${parseFloat(data.recibo.monto).toFixed(2)}</p>
+                        <p><strong>Fecha y Hora de Pago:</strong> ${fechaFormateada}</p>
+                        <p class="text-[10px] text-amber-700 font-bold uppercase mt-2">No se requiere realizar un nuevo cobro.</p>
+                    </div>
+                `;
+                            btnCobro.classList.add('hidden'); // Ocultamos el botón de cobrar para evitar duplicados
+
                         } else {
+                            // CASO 3: Error / QR Falso o No Encontrado
                             contenedor.innerHTML = `<p class="text-red-600 font-bold text-center py-4">${data.message}</p>`;
                             btnCobro.classList.add('hidden');
                         }

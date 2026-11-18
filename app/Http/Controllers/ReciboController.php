@@ -36,11 +36,20 @@ class ReciboController extends Controller
         $recibo = Recibo::with('usuario')->where('token_seguridad', $token)->first();
 
         if (!$recibo) {
-            return response()->json(['success' => false, 'message' => 'Código QR inválido o no reconocido en el sistema.']);
+            return response()->json([
+                'success' => false,
+                'message' => 'Código QR inválido o no reconocido en el sistema.'
+            ]);
         }
 
+        // Si ya está pagado, enviamos la información detallada del pago previo
         if ($recibo->estatus === 'pagado') {
-            return response()->json(['success' => false, 'message' => '¡Atención! Este recibo ya fue pagado con anterioridad.']);
+            return response()->json([
+                'success' => false,
+                'ya_pagado' => true, // Bandera especial para identificarlo en el frontend
+                'message' => '¡Atención! Este recibo ya fue liquidado anteriormente.',
+                'recibo' => $recibo
+            ]);
         }
 
         return response()->json([
