@@ -8,6 +8,7 @@ use App\Http\Controllers\HorarioSuministroController;
 use App\Http\Controllers\TarifaController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\ReciboController;
+use App\Http\Controllers\Admin\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -16,9 +17,9 @@ Route::get('/', function () {
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', 'active'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'active'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -30,7 +31,6 @@ Route::middleware('auth')->group(function () {
     Route::resource('redes', RedController::class);
     Route::resource('usuarios', UsuarioController::class);
     Route::resource('horarios', HorarioSuministroController::class)->parameters(['horarios' => 'horario']);
-
 
     Route::get('/tarifas/json', [TarifaController::class, 'indexAjax'])->name('tarifas.json');
     Route::post('/tarifas/store-ajax', [TarifaController::class, 'store'])->name('tarifas.store.ajax');
@@ -49,7 +49,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/recibos/cobrar-qr/{id}', [ReciboController::class, 'procesarCobroQr'])->name('recibos.cobrar.qr');
 
     Route::get('/recibos/verificar/{token}', [ReciboController::class, 'verificarPorQr'])->name('recibos.verificar');
-
 });
+
+Route::middleware(['auth', 'active', 'admin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('/cuentas', [UserManagementController::class, 'index'])->name('cuentas.index');
+        Route::post('/cuentas', [UserManagementController::class, 'store'])->name('cuentas.store');
+        Route::patch('/cuentas/{usuario}/status', [UserManagementController::class, 'updateStatus'])->name('cuentas.status');
+    });
 
 require __DIR__ . '/auth.php';

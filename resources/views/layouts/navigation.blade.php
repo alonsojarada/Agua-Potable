@@ -36,7 +36,6 @@
             <span>Caja Individual</span>
         </a>
 
-
         <a href="{{ route('redes.index') ?? '#' }}"
             class="flex items-center gap-3 px-3 py-2.5 rounded-md font-semibold {{ request()->routeIs('redes.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition">
             <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -68,6 +67,17 @@
             <span>Escanear QR</span>
         </a>
 
+        @if (auth()->user()?->isAdmin())
+            <div class="pt-3 mt-3 border-t border-gray-100">
+                <div class="px-3 pb-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Administración</div>
+
+                <a href="{{ route('admin.cuentas.index') }}"
+                    class="flex items-center gap-3 px-3 py-2.5 rounded-md font-semibold {{ request()->routeIs('admin.cuentas.*') ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-100' }} transition">
+                    <span class="text-base">🔐</span>
+                    <span>Cuentas de Acceso</span>
+                </a>
+            </div>
+        @endif
     </div>
 
     <!-- Pie de Sidebar -->

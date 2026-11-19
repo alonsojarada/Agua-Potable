@@ -28,6 +28,19 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = $request->user();
+
+        if ($user && !$user->isActivo()) {
+            Auth::guard('web')->logout();
+
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withInput($request->only('email'))->withErrors([
+                'email' => 'Tu cuenta se encuentra inactiva. Consulta con el administrador del sistema.',
+            ]);
+        }
+
         return redirect()->intended(route('dashboard', absolute: false));
     }
 

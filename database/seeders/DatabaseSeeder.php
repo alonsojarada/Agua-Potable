@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Administrador General',
             'email' => 'admin@aguapotable.com',
             'password' => Hash::make('password123'),
+            'status' => 'activo',
             'rol' => 'admin',
         ]);
 
@@ -29,6 +30,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Operador de Campo',
             'email' => 'operador@aguapotable.com',
             'password' => Hash::make('password123'),
+            'status' => 'activo',
             'rol' => 'operador',
         ]);
     }
